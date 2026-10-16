@@ -1,5 +1,0 @@
-blank_issues_enabled: true
-contact_links:
-  - name: Security vulnerability
-    url: https://github.com/skillustrate/triview-compass/security/advisories/new
-    about: Do not open a public issue for a security vulnerability — use SECURITY.md's private reporting channel instead.

@@ -1,21 +1,54 @@
-.DS_Store
+# Dependencies and generated build/test output.
 node_modules/
+/dist/
+/coverage/
+/.nyc_output/
+/.cache/
+*.tsbuildinfo
+*.tgz
+
+# Local credentials and environment overrides.
 .env
 .env.*
+!.env.example
+!.env.*.example
+!.env.sample
+
+# Logs, editor state, and operating-system metadata.
 *.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+/.idea/
+/.vscode/
+*.swp
+*.swo
+*~
 __pycache__/
-evals/results/
-coverage/
-dist/
+*.py[cod]
 
 # Local review output and optional user-curated project conventions.
 .reviewer/
 
-# Internal working documents from private development: session handoff log,
-# phased implementation plan, code-review diary, architecture scratch notes.
-# Not written for an external reader and deliberately excluded from this
-# public repository's history.
-STATE.md
-plan.md
-review.md
-design.md
+# Private development notes and local test reports.
+/STATE.md
+/plan.md
+/review.md
+/design.md
+/test_results_codex.md
+/test_results_*.md
+
+# Fresh evaluation output. Checked-in evidence and fixtures remain versioned.
+/evals/results/
+
+# Optional project governance and historical local run artifacts.
+/CONTRIBUTING.md
+/CODE_OF_CONDUCT.md
+/.github/ISSUE_TEMPLATE/
+/.github/PULL_REQUEST_TEMPLATE.md
+/evals/evidence/*
+!/evals/evidence/dependency-audit-2026-10-14.json
+!/evals/evidence/evidence-context-sonnet-2026-10-15-cli2.1.300.json
+/evals/security/image-scan/
+/evals/security/multi-harness-isolation/
+/evals/corpus/metrics-log.jsonl

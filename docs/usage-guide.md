@@ -1,6 +1,6 @@
 # Usage guide: steps and examples
 
-[Getting started](getting-started.md) covers the first run. [Choose your harness](harness-selection.md) before making model calls. The examples below explicitly choose the Claude Code reference adapter because the historical [2026-10-15 evidence](../evals/evidence/e2e-manual-test-2026-10-15/README.md) used it. They are not defaults. Current commands add `--harness claude-code` to record that choice; historical raw evidence remains unchanged. Substitute your own adapter or routes flags and matching policy for another harness.
+[Getting started](getting-started.md) covers the first run. [Choose your harness](harness-selection.md) before making model calls. The examples below explicitly choose the Claude Code reference adapter because the historical 2026-10-15 evidence (local historical archive) used it. They are not defaults. Current commands add `--harness claude-code` to record that choice; historical raw evidence remains unchanged. Substitute your own adapter or routes flags and matching policy for another harness.
 
 ## 1. Reviewing files directly, no Git repository
 
@@ -23,7 +23,7 @@ node src/cli/review.js --request request.json --policy examples/claude-code-poli
   --harness claude-code --model sonnet --context-window 300000 --format text
 ```
 
-`--context-window 300000` and a policy with `maxInputTokensPerReviewer` raised to at least `200000` are not arbitrary — the default `100000` is frequently too small once Claude Code's own fixed 65,536-token protocol reserve is subtracted. See [`src/cli/README.md`](../src/cli/README.md#optional-sandbox-verification) and the Phase 9 [latency/cost evidence](../evals/evidence/latency-cost-2026-10-15/README.md) for why.
+`--context-window 300000` and a policy with `maxInputTokensPerReviewer` raised to at least `200000` are not arbitrary — the default `100000` is frequently too small once Claude Code's own fixed 65,536-token protocol reserve is subtracted. See [`src/cli/README.md`](../src/cli/README.md#optional-sandbox-verification) and the Phase 9 latency/cost evidence (local historical archive) for why.
 
 ## 2. Reviewing a real commit range in a Git repository
 

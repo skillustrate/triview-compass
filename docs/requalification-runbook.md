@@ -6,7 +6,7 @@ This procedure has been run for real twice so far (2.1.296 → 2.1.299, then 2.1
 
 ## Who approves this
 
-On a single-maintainer project (see `CONTRIBUTING.md`), the maintainer approves every requalification — there is no separate approver role yet. If this project grows a second maintainer, update this line to say who that is and whether review is required before merging a requalification, rather than leaving this section stale.
+On a single-maintainer project, the maintainer approves every requalification — there is no separate approver role yet. If this project grows a second maintainer, update this line to say who that is and whether review is required before merging a requalification, rather than leaving this section stale.
 
 ## Steps
 

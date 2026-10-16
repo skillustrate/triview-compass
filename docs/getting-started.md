@@ -80,4 +80,4 @@ See `--policy-overrides` in [`src/cli/README.md`](../src/cli/README.md) — it l
 
 ## More examples
 
-[The usage guide](usage-guide.md) covers Git-based review (the shape a real CI job uses), shared policies across repos, sandbox verification, and audit retention — each one a command actually run against this project, with the full output in [its evidence](../evals/evidence/e2e-manual-test-2026-10-15/README.md).
+[The usage guide](usage-guide.md) covers Git-based review (the shape a real CI job uses), shared policies across repos, sandbox verification, and audit retention — each one a command actually run against this project, with the full output in its evidence (local historical archive).
