@@ -1,0 +1,53 @@
+{
+  "id": "004-minimist-constructor-proto-vector",
+  "status": "dispositioned",
+  "addedDate": "2026-10-14",
+  "dispositionedDate": "2026-10-14",
+  "source": {
+    "repository": "external: minimistjs/minimist (https://github.com/minimistjs/minimist), cloned locally for this review",
+    "baseRevision": "13c01a5327736903704984b7f65616b8476850cc",
+    "targetRevision": "38a4d1caead72ef99e824bb420a2528eec03d9ab"
+  },
+  "groundTruth": {
+    "type": "known-defect-present",
+    "description": "The target commit ('even more aggressive checks for protocol pollution', 2020-03-10) rewrites setKey() in index.js to block the `__proto__` key and to redirect writes when a traversed value identity-matches Object.prototype/Number.prototype/String.prototype/Array.prototype. It does not check for the `constructor` key, which on any plain object resolves to the Object/Array/etc. constructor FUNCTION rather than its prototype, so the identity checks never trigger for it. This exact gap is independently documented and dated: OSV/GHSA-xvch-5gv4-984h (CVE-2021-44906, CVSS CRITICAL) says Minimist prior to 1.2.6 is 'vulnerable to Prototype Pollution via file index.js, function setKey() (lines 69-95)' - the same function, same file, same line range this diff produces - and was fixed two years later (2022-03-21) by adding an explicit isConstructorOrProto() guard in commit ef9153f. I cross-referenced the OSV advisory (https://api.osv.dev) against `git log --follow -- index.js` myself to find this introducing commit, rather than relying on the advisory's own commit references alone.",
+    "evidence": [
+      { "path": "index.js", "startLine": 69, "endLine": 95, "note": "setKey(); blocks __proto__ and known prototype objects by identity, but never checks the constructor key" }
+    ],
+    "expectedVerdict": "request-changes-with-a-required-or-critical-security-finding-on-the-constructor-bypass",
+    "confirmingFix": "ef9153f (minimistjs/minimist, 'isConstructorOrProto adapted from PR', fixes GHSA-xvch-5gv4-984h / CVE-2021-44906)",
+    "independentReproduction": "Ran the actual checked-out target-revision index.js locally (not the hosted reviewer, a separate local Node process) against two payloads: `--constructor.prototype.x 1` left Object.prototype.x as undefined (does not reproduce); `--constructor.foo bar` set both Object.foo and ({}).constructor.foo to 'bar' (reproduces: a real, exploitable constructor-pollution path, confirming the vulnerability class without needing the 'prototype' segment at all)."
+  },
+  "requestPath": "./request.json",
+  "policyPath": "./policy.json",
+  "runs": [
+    {
+      "label": "live run, Claude Code CLI 2.1.299, external repository input",
+      "reportPath": "./report.json",
+      "dispositions": [
+        {
+          "findingId": "finding-1",
+          "reviewer": "code-quality",
+          "severity": "Required",
+          "verdict": "confirmed",
+          "note": "Core claim confirmed: the guard checks __proto__ and identity-compares known prototype objects, but never checks the constructor key, so traversing through .constructor reaches the Object (or Array, etc.) constructor function unguarded - this is exactly CVE-2021-44906. However, the SPECIFIC payload in this finding's impact text (`--constructor.prototype.x=1`) does not reproduce: I ran the actual target-revision code with that exact input and Object.prototype.x stayed undefined, because the final-segment guard (`o === Object.prototype -> o = {}`) does catch that particular 3-segment path. The real, reproducing exploit is simpler (`--constructor.foo=bar`, no `.prototype` segment needed - see groundTruth.independentReproduction), which pollutes the Object constructor function itself rather than Object.prototype directly, but is reachable from any plain object via `.constructor` and is the actual documented CVE mechanism. Confirmed as a real, correctly-identified, Required-severity defect; the finding's specific technical walkthrough of the mechanism is not fully accurate and should not be taken as a verified PoC without this correction."
+        },
+        {
+          "findingId": "finding-2",
+          "reviewer": "security",
+          "severity": "Required",
+          "verdict": "confirmed",
+          "note": "Same core claim as finding-1 (constructor-key bypass of the prototype-pollution guard), independently raised by the security reviewer with an overlapping but distinct evidence range. Same caveat applies: the exact `--constructor.prototype.x=1` walkthrough in the impact text does not reproduce as described (verified by direct execution against the target-revision code), but the underlying vulnerability and its conclusion are correct and match CVE-2021-44906/GHSA-xvch-5gv4-984h exactly. Confirmed."
+        },
+        {
+          "findingId": "finding-3",
+          "reviewer": "performance",
+          "severity": "Optional",
+          "verdict": "confirmed",
+          "note": "Accurate: read test/proto.js at the target revision directly - all four tests in that file exercise only `__proto__`-based payloads (`--__proto__.x`, `--x.__proto__.z` in array/number/string contexts); none test a `constructor`-based path. The claim that this bypass vector would go undetected by the existing tests is correct."
+        }
+      ]
+    }
+  ],
+  "notes": "First corpus case sourced from outside this project (plan.md Phase 7 explicitly requires diversifying beyond this repo's own history). Found via the OSV API (https://api.osv.dev/v1/query, package=minimist, ecosystem=npm) rather than guessing from memory, which surfaced two separate minimist CVEs: GHSA-vh95-rmgr-6w4m/CVE-2020-7598 (fixed across several commits through v1.2.3 - deliberately NOT used here because the fix was multi-commit and partially incomplete at each individual step, which would make a clean single-commit known-fix or known-defect-present case ambiguous) and GHSA-xvch-5gv4-984h/CVE-2021-44906 (fixed in one commit, ef9153f, two years after this case's target commit introduced the gap - a clean, well-isolated story). Base/target are the introducing commit's immediate parent and itself (same pattern as case 003), verified with `git diff --name-status` for zero deletions before scoping. Sending its source to the approved hosted review provider is consistent with plan.md's own guidance that public repositories are a reasonable corpus source. The cloned repository used to generate and run this case is not part of this project's own history and lives outside this repository (a temporary local clone); only the request/policy/report artifacts needed to reproduce or audit the review are committed here."
+}

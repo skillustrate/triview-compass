@@ -1,0 +1,5 @@
+{
+  "code-quality": { "kind": "claude-code", "adapterId": "claude-default", "modelId": "sonnet", "contextWindowTokens": 200000 },
+  "security": { "kind": "claude-code", "adapterId": "claude-default", "modelId": "haiku", "contextWindowTokens": 200000 },
+  "performance": { "kind": "claude-code", "adapterId": "claude-default", "modelId": "sonnet", "contextWindowTokens": 200000 }
+}

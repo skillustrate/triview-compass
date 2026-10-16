@@ -1,0 +1,39 @@
+{
+  "id": "008-minimist-boolean-alias-bug",
+  "status": "dispositioned",
+  "addedDate": "2026-10-14",
+  "dispositionedDate": "2026-10-14",
+  "source": {
+    "repository": "external: minimistjs/minimist (https://github.com/minimistjs/minimist), cloned locally for this review",
+    "baseRevision": "0fa3c5b3dd98551ddecf5392831b4c21211743fc",
+    "targetRevision": "9c0a6e7de25a273b11bbf9a7464f0bd833779795"
+  },
+  "groundTruth": {
+    "type": "known-fix",
+    "description": "A genuine non-security correctness fix, with the author's own repro case embedded in the commit message: before this change, `aliases[key] ? !flags.bools[aliases[key]] : true` indexed flags.bools with an ARRAY when a flag had multiple aliases (aliases[key] is an array in that case), which silently evaluates to undefined rather than the intended boolean check - so a boolean flag with multiple aliases incorrectly consumed the next argv value instead of being treated as a bare boolean. The fix adds an `aliasIsBoolean(key)` helper that checks `aliases[key].some(x => flags.bools[x])` instead. This is the first non-security known-fix case in the corpus (category: correctness/code-quality).",
+    "evidence": [
+      { "path": "index.js", "startLine": 116, "endLine": 123, "note": "the boolean-with-multiple-aliases consumption check, now using aliasIsBoolean()" }
+    ],
+    "expectedVerdict": "recommend-approval-with-no-blocking-findings-on-the-intended-fix",
+    "confirmingFix": "this commit itself; author-supplied repro case is in the commit message"
+  },
+  "requestPath": "./request.json",
+  "policyPath": "./policy.json",
+  "runs": [
+    {
+      "label": "live run, Claude Code CLI 2.1.299, external repository input",
+      "reportPath": "./report.json",
+      "dispositions": [
+        {
+          "findingId": "finding-1",
+          "reviewer": "security",
+          "severity": "Required",
+          "verdict": "rejected",
+          "reasonCode": "not-change-relevant",
+          "note": "The underlying claim is factually TRUE - I reproduced it directly: running this exact target-revision code with `parse(['--constructor', 'x'])` throws `TypeError: (aliases[key] || []).forEach is not a function`, confirming that an attacker-controlled flag name matching an inherited Object.prototype property (constructor, __proto__, toString, valueOf) crashes the parser. However, I also ran the identical input against the BASE revision (immediately before this diff) and got the exact same crash, with the exact same message, at the exact same underlying cause (aliases is a plain {} object; aliases['constructor'] resolves via the prototype chain to a truthy non-array value). This is a pre-existing defect that predates the reviewed change - it is not introduced or worsened by this diff, which is explicitly out of this tool's documented review scope (review.md SS5: 'an unchanged issue is outside this review scope unless the change demonstrably makes it worse'). The finding also mischaracterizes the mechanism: it cites lines 88-92 (the new aliasIsBoolean/.some() call) as the crash site, but the actual first crash in both the base and target revision happens earlier, at line 64's pre-existing `(aliases[key] || []).forEach(...)` inside setArg() - the new aliasIsBoolean code is never even reached for this input. Rejected on scope grounds (pre-existing, not introduced-or-worsened) despite the underlying bug being real; this is the corpus's first confirmed scope-discipline failure on real code, mirroring the exact failure mode review.md SS3 already documented on a synthetic fixture."
+        }
+      ]
+    }
+  ],
+  "notes": "This case was intended as a routine known-fix case and became something more useful: a real-world instance of the scope-discipline failure (flagging a true-but-pre-existing defect as if introduced by the reviewed change) that review.md SS3 previously only had synthetic-fixture evidence for. Confirmed by actually executing both the base and target revisions of the real code with the same crafted input (`--constructor x`), not by reading alone. Recorded here rather than discarded, since a corpus case that disproves part of its own prediction is more informative than one that doesn't."
+}

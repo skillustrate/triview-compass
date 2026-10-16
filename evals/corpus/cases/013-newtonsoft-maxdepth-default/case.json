@@ -1,0 +1,53 @@
+{
+  "id": "013-newtonsoft-maxdepth-default",
+  "status": "dispositioned",
+  "addedDate": "2026-10-14",
+  "dispositionedDate": "2026-10-14",
+  "source": {
+    "repository": "external: JamesNK/Newtonsoft.Json (https://github.com/JamesNK/Newtonsoft.Json), cloned locally for this review",
+    "baseRevision": "42139ea6cd8d500790bf27c9afc69fd66eab60ad",
+    "targetRevision": "7e77bbe1beccceac4fc7b174b53abfefac278b66"
+  },
+  "groundTruth": {
+    "type": "known-fix",
+    "description": "Fixes GHSA-5crp-9r3c-p9vr: deeply-nested JSON (~20k+ levels) could exhaust the call stack or consume excessive CPU/memory with no limit by default. The fix changes JsonReader's and JsonSerializerSettings' default MaxDepth from unlimited (null) to 128. First corpus case in C#/.NET. Intended as a straightforward known-fix case; the live run surfaced a real, independently-corroborated gap in the fix itself (see dispositions).",
+    "evidence": [
+      { "path": "Src/Newtonsoft.Json/JsonReader.cs", "startLine": 227, "endLine": 332, "note": "new default MaxDepth = 128" },
+      { "path": "Src/Newtonsoft.Json/JsonSerializerSettings.cs", "startLine": 320, "endLine": 340, "note": "MaxDepth getter now returns DefaultMaxDepth (128) when unset" }
+    ],
+    "expectedVerdict": "recommend-approval-with-no-blocking-findings",
+    "confirmingFix": "this commit itself; see GHSA-5crp-9r3c-p9vr"
+  },
+  "requestPath": "./request.json",
+  "policyPath": "./policy.json",
+  "runs": [
+    {
+      "label": "live run, Claude Code CLI 2.1.299, external repository input, context-window 350000",
+      "reportPath": "./report.json",
+      "dispositions": [
+        {
+          "findingId": "finding-1",
+          "reviewer": "code-quality",
+          "severity": "Required",
+          "verdict": "confirmed",
+          "note": "Verified by hand-tracing the Setup/Reset pair in JsonSerializer.cs (no .NET runtime was available to execute it; disclosed rather than hidden). SetupReader (lines 960-968) only overrides reader.MaxDepth when `_maxDepthSet && reader.MaxDepth != _maxDepth`; if the values already match, it skips the override and records previousMaxDepth = null. ResetReader (lines 1008-1011) only checks `_maxDepthSet` - not the equality condition - so it unconditionally runs `reader.MaxDepth = previousMaxDepth` whenever _maxDepthSet is true, including the case where Setup never touched the reader. Concretely: a serializer with MaxDepth explicitly set to 128, used against a fresh reader that already defaults to 128, triggers exactly this path and ends with reader.MaxDepth = null after the call - the new DoS protection is silently stripped for the rest of that reader's life. This is a real, asymmetric-condition bug in the fix itself, not a restatement of something already known. Independently corroborated: `JsonSerializer.MaxDepth`'s getter is still exactly `get => _maxDepth;` (unfixed) in the repository's current main branch, years later."
+        },
+        {
+          "findingId": "finding-2",
+          "reviewer": "code-quality",
+          "severity": "Optional",
+          "verdict": "confirmed",
+          "note": "Verified directly: `private int? _maxDepth;` has no field initializer, so JsonSerializer.MaxDepth's getter (`get => _maxDepth;`) returns null by default, contradicting its own just-updated doc comment claiming a default of 128. JsonSerializerSettings.MaxDepth, by contrast, does correctly return DefaultMaxDepth (128) when unset - the inconsistency is real and specific to JsonSerializer."
+        },
+        {
+          "findingId": "finding-3",
+          "reviewer": "security",
+          "severity": "Nit",
+          "verdict": "confirmed",
+          "note": "Same underlying observation as finding-2, raised independently by the security reviewer at lower severity, with an important additional correct caveat: 'Enforcement is not affected: the reader keeps its own 128 default when the serializer's value is unset.' That caveat is accurate and is what I had to verify by tracing finding-1's SetupReader/ResetReader logic separately - this reviewer correctly scoped its own claim to the documentation mismatch without overclaiming a functional break, which finding-1 (correctly) does claim exists via a different, more specific path."
+        }
+      ]
+    }
+  ],
+  "notes": "Preflight needed real headroom beyond the usual bump: three files totaling ~115KB required maxInputTokensPerReviewer=230000 and --context-window=350000. The first live attempt also failed with 'The reviewer invocation failed' on the code-quality role (likely a timeout under the larger payload); raised budgets.timeoutSeconds from 120 to 240 and the retry completed cleanly. All three findings were independently verified by direct code reading across two passes - my first read of finding-1 concluded it was probably wrong (a naive trace of the Setup/Reset pair looked symmetric and safe), and only a second, more careful trace of the specific case where Setup's equality check is skipped revealed the real bug, which matches finding-1's own stated mechanism exactly. This is the corpus's best evidence yet that a model's self-reported reasoning can be correct and non-obvious at the same time - worth remembering before defaulting to skepticism on a finding whose first-pass trace looks clean."
+}

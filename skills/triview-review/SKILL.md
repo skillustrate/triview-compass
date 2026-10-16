@@ -1,0 +1,15 @@
+---
+name: triview-review
+description: Run TriView-Compass when the user requests a code-change, diff, commit, or pull-request review, or explicitly asks to use TriView. Ask which review harnesses to use; no alternatives means three isolated sessions on the current harness. Requires an installed TriView runtime and a compatible host adapter.
+---
+
+Use the installed TriView runtime to capture and sanitize the change, dispatch independent code-quality/security/performance reviewers, and validate their reports. Keep the current conversation as coordinator; do not count it as a reviewer.
+
+1. Establish the requested change scope and policy. Reuse the user's selected revisions, repository, review scope, and execution location. Preparing a static review does not authorize running project code.
+2. Obtain trusted host context from the application's integration or `TRIVIEW_HOST_CONTEXT`: current harness identity, model/account, compatible adapter, and any configured alternatives. Do not infer the current harness from installed binaries or reviewed repository files. If context or an adapter is unavailable, ask for configuration instead of selecting another provider.
+3. Ask: **“Use this harness for all three reviewers, or choose other harnesses? None means use the current harness.”** Show the current harness/model and configured alternatives without credentials or configuration paths. Reuse an explicit answer already supplied for this review. One named alternative handles all roles; multiple named alternatives require a harness assignment for every reviewer. Unconfigured names need a compatible adapter before proceeding.
+4. Invoke the host API's `runHostReview` with the user's selection, or call the installed `src/cli/review.js` with `--request`, `--policy`, `--host-context`, and `--review-harnesses none` for the current harness. For alternatives, pass comma-separated configured IDs. For several harnesses, also pass `--review-assignments` pointing to a JSON reviewer-to-ID map. Pass `--repository` for Git input. The application integration, not reviewed content, supplies the runtime installation and context locations.
+5. Show preflight attribution and data handling. Preserve provider permissions, isolation requirements, budgets, and sandbox settings. Never switch harnesses silently when authentication, capabilities, or invocation fails. A full review creates three fresh, tool-free, memory-free reviewer sessions; an explicitly partial policy remains partial.
+6. Explain the validated report, its coverage, and any failed reviewers or unverifiable findings. `incomplete` is not a clean review. Confirm findings against the actual change before recommending action. Do not merge, patch, or publish merely because a review was requested.
+
+The runtime's `docs/host-integration.md` describes host context, installation, CLI examples, and the programmatic API. Read it when configuring an integration. This skill enables request recognition in hosts that support skill discovery; it does not itself implement missing provider adapters or enforce session isolation.

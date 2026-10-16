@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Review Policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "mode", "reviewers", "budgets", "dataPolicy", "pathPolicy", "secretPolicy", "sandbox"],
+  "properties": {
+    "contractVersion": { "const": "1.0" },
+    "mode": { "$ref": "common.schema.json#/$defs/reviewMode" },
+    "reviewers": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/reviewer" },
+      "uniqueItems": true,
+      "minItems": 1,
+      "maxItems": 3
+    },
+    "budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maxFiles", "maxChangedLines", "maxLinesPerFile", "maxBytesPerFile", "maxInputTokensPerReviewer", "maxOutputTokensPerReviewer", "maxModelCalls", "timeoutSeconds"],
+      "properties": {
+        "maxFiles": { "type": "integer", "minimum": 1 },
+        "maxChangedLines": { "type": "integer", "minimum": 1 },
+        "maxLinesPerFile": { "type": "integer", "minimum": 1 },
+        "maxBytesPerFile": { "type": "integer", "minimum": 1, "maximum": 8388608 },
+        "maxInputTokensPerReviewer": { "type": "integer", "minimum": 1 },
+        "maxOutputTokensPerReviewer": { "type": "integer", "minimum": 1 },
+        "maxModelCalls": { "type": "integer", "minimum": 1 },
+        "timeoutSeconds": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "dataPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "allowedProviders"],
+      "properties": {
+        "mode": { "type": "string", "enum": ["local-only", "approved-hosted", "disallow-model-calls"] },
+        "selectedProvider": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+        "roleRoutes": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "code-quality": { "$ref": "#/$defs/roleRoute" },
+            "security": { "$ref": "#/$defs/roleRoute" },
+            "performance": { "$ref": "#/$defs/roleRoute" }
+          },
+          "minProperties": 1
+        },
+        "allowedProviders": {
+          "type": "array",
+          "items": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+          "uniqueItems": true
+        }
+      },
+      "not": { "required": ["selectedProvider", "roleRoutes"] },
+      "allOf": [
+        {
+          "if": { "properties": { "mode": { "const": "approved-hosted" } }, "required": ["mode"] },
+          "then": { "properties": { "allowedProviders": { "minItems": 1 } } }
+        },
+        {
+          "if": { "properties": { "mode": { "const": "disallow-model-calls" } }, "required": ["mode"] },
+          "then": { "properties": { "allowedProviders": { "maxItems": 0 } },
+            "not": { "anyOf": [{ "required": ["selectedProvider"] }, { "required": ["roleRoutes"] }] } }
+        }
+      ]
+    },
+    "pathPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["excludedPathGlobs", "generatedPathGlobs", "symlinkHandling", "binaryHandling"],
+      "properties": {
+        "excludedPathGlobs": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 256 }, "uniqueItems": true },
+        "generatedPathGlobs": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 256 }, "uniqueItems": true },
+        "symlinkHandling": { "type": "string", "enum": ["reject", "resolve-within-snapshot"] },
+        "binaryHandling": { "type": "string", "enum": ["report-and-skip", "stop-review"] }
+      }
+    },
+    "secretPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scannerRequired", "sensitivePathGlobs", "onScannerFailure"],
+      "properties": {
+        "scannerRequired": { "const": true },
+        "sensitivePathGlobs": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 256 }, "uniqueItems": true },
+        "onScannerFailure": { "type": "string", "enum": ["omit-affected-content", "stop-review"] }
+      }
+    },
+    "sandbox": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["executionRequested", "backend", "network"],
+      "properties": {
+        "executionRequested": { "type": "boolean" },
+        "backend": { "type": "string", "enum": ["podman", "none"] },
+        "network": { "const": "disabled" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "executionRequested": { "const": false } }, "required": ["executionRequested"] },
+          "then": { "properties": { "backend": { "const": "none" } } }
+        },
+        {
+          "if": { "properties": { "executionRequested": { "const": true } }, "required": ["executionRequested"] },
+          "then": { "properties": { "backend": { "const": "podman" } } }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "roleRoute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["providerId", "modelId", "adapterId", "dataHandling"],
+      "properties": {
+        "providerId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+        "modelId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+        "adapterId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+        "dataHandling": { "type": "string", "enum": ["local", "hosted"] }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "mode": { "const": "full" } }, "required": ["mode"] },
+      "then": {
+        "properties": {
+          "reviewers": {
+            "minItems": 3,
+            "maxItems": 3,
+            "contains": { "const": "code-quality" },
+            "allOf": [
+              { "contains": { "const": "security" } },
+              { "contains": { "const": "performance" } }
+            ]
+          },
+          "budgets": { "properties": { "maxModelCalls": { "minimum": 3 } } }
+        }
+      },
+      "else": { "properties": { "reviewers": { "maxItems": 2 } } }
+    }
+  ]
+}

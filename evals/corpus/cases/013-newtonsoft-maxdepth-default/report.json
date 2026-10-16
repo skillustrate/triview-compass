@@ -1,0 +1,261 @@
+{
+  "contractVersion": "1.0",
+  "reviewId": "review-56eb45f84d6baa1143b6",
+  "snapshotSha256": "56eb45f84d6baa1143b627bdf3eb0fedae24cfcb06de2fdeabab8738940cfa7d",
+  "mode": "full",
+  "status": "complete",
+  "verdict": "request-changes",
+  "reviewers": [
+    {
+      "role": "code-quality",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-d3dd5d67-feac-46f6-8df3-04cfb3148c29",
+      "contextId": "6c195430-1a5e-435d-810c-6457ef79c24d"
+    },
+    {
+      "role": "security",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-c15cd195-7932-445e-9d4a-5947e39767b5",
+      "contextId": "011a9d14-5ebc-4fa7-91cf-4565ddefb42c"
+    },
+    {
+      "role": "performance",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-15990059-1627-44b6-b205-fa732ef799c9",
+      "contextId": "7d6c5838-577e-47bb-9f96-198c9df7869c"
+    }
+  ],
+  "findings": [
+    {
+      "id": "finding-1",
+      "category": "correctness",
+      "severity": "Required",
+      "title": "ResetReader can remove the new default MaxDepth limit of 128",
+      "impact": "The reader now defaults to MaxDepth 128. If a serializer sets MaxDepth explicitly to a value equal to the reader's (for example 128), SetupReader skips the change and leaves previousMaxDepth null. ResetReader then runs because _maxDepthSet is true and assigns reader.MaxDepth = null. The reader is left with no depth limit after deserialization, so reuse of the reader silently loses the new protection. This was harmless when the reader default was null, but the new default makes it a regression.",
+      "evidence": {
+        "path": "Src/Newtonsoft.Json/JsonSerializer.cs",
+        "startLine": 1008,
+        "endLine": 1011
+      },
+      "recommendation": "Track whether the max depth was actually changed, for example with a separate bool or by restoring only when SetupReader modified it. Add a test for deserializing with an explicit MaxDepth equal to the reader's, then checking reader.MaxDepth afterwards.",
+      "sourceFindings": [
+        {
+          "reviewer": "code-quality",
+          "findingId": "f1",
+          "severity": "Required",
+          "confidence": 0.6
+        }
+      ],
+      "disagreement": false
+    },
+    {
+      "id": "finding-2",
+      "category": "correctness",
+      "severity": "Optional",
+      "title": "JsonSerializer.MaxDepth doc says default 128 but the getter returns null",
+      "impact": "The JsonSerializer.MaxDepth doc says the default is 128. The getter returns the unset _maxDepth, which is null, and the constructor does not initialize it. This is inconsistent with JsonSerializerSettings.MaxDepth, which returns DefaultMaxDepth when unset. Null means no maximum, so callers who read the property get the opposite of what the doc says.",
+      "evidence": {
+        "path": "Src/Newtonsoft.Json/JsonSerializer.cs",
+        "startLine": 519,
+        "endLine": 532
+      },
+      "recommendation": "Make the getter return `_maxDepthSet ? _maxDepth : JsonSerializerSettings.DefaultMaxDepth`, as the settings class does. The serializer would still not override the reader unless MaxDepth is set explicitly.",
+      "sourceFindings": [
+        {
+          "reviewer": "code-quality",
+          "findingId": "f2",
+          "severity": "Optional",
+          "confidence": 0.55
+        }
+      ],
+      "disagreement": false
+    },
+    {
+      "id": "finding-3",
+      "category": "correctness",
+      "severity": "Nit",
+      "title": "JsonSerializer.MaxDepth getter reports null although docs say default is 128",
+      "impact": "JsonSerializer.MaxDepth returns null when unset, but the updated docs say the default is 128. JsonSerializerSettings.MaxDepth returns 128 when unset. Callers who read the serializer property may wrongly conclude that depth is unlimited. Enforcement is not affected: the reader keeps its own 128 default when the serializer's value is unset.",
+      "evidence": {
+        "path": "Src/Newtonsoft.Json/JsonSerializer.cs",
+        "startLine": 514,
+        "endLine": 532
+      },
+      "recommendation": "Make the getter return the default 128 when _maxDepthSet is false, as JsonSerializerSettings does. Alternatively, reword the doc to say the reader default applies.",
+      "sourceFindings": [
+        {
+          "reviewer": "security",
+          "findingId": "f1",
+          "severity": "Nit",
+          "confidence": 0.4
+        }
+      ],
+      "disagreement": false
+    }
+  ],
+  "unverifiableFindings": [],
+  "coverage": {
+    "includedPaths": [
+      "Src/Newtonsoft.Json/JsonReader.cs",
+      "Src/Newtonsoft.Json/JsonSerializer.cs",
+      "Src/Newtonsoft.Json/JsonSerializerSettings.cs"
+    ],
+    "excludedPaths": [
+      "Src/Newtonsoft.Json.Tests/Serialization/JsonSerializerTest.cs"
+    ],
+    "skippedChecks": [
+      "excluded content was omitted from reviewer input.",
+      "Sandbox verification was not requested."
+    ]
+  },
+  "limitations": [
+    "code-quality: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "code-quality: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "code-quality: Context capacity and protocol reserve are caller-configured assumptions.",
+    "model usage reporting is unavailable",
+    "security: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "security: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "security: Context capacity and protocol reserve are caller-configured assumptions.",
+    "performance: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "performance: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "performance: Context capacity and protocol reserve are caller-configured assumptions."
+  ],
+  "preflight": {
+    "contractVersion": "1.0",
+    "kind": "preflight",
+    "status": "ready",
+    "reviewId": "review-56eb45f84d6baa1143b6",
+    "snapshotSha256": "56eb45f84d6baa1143b627bdf3eb0fedae24cfcb06de2fdeabab8738940cfa7d",
+    "policyVersion": "ae62d67dce7300dc82be465ad44bdd18b1e898f77fe89856b09466ba5694532b",
+    "mode": "full",
+    "promptVersions": [
+      {
+        "role": "code-quality",
+        "version": "27bce1d1c541c20c1d428ac3a4bd26b0431030779fb71aa43fa5e08a6f32106a"
+      },
+      {
+        "role": "security",
+        "version": "b0a7cbe7d719df231500d09537618cd4b0ca1bfd3ef6ee4601ee4c70ecb4ad14"
+      },
+      {
+        "role": "performance",
+        "version": "420a63cca0f8281775e8c0d000ed60a2048656da3f6eefe49bf3a80ca8e154a2"
+      }
+    ],
+    "scopeCounts": {
+      "included": 3,
+      "excluded": 1,
+      "binary": 0,
+      "generated": 0,
+      "oversized": 0
+    },
+    "budgets": {
+      "maxFiles": 50,
+      "maxChangedLines": 6000,
+      "maxLinesPerFile": 2000,
+      "maxBytesPerFile": 1048576,
+      "maxInputTokensPerReviewer": 230000,
+      "maxOutputTokensPerReviewer": 2000,
+      "maxModelCalls": 3,
+      "timeoutSeconds": 240
+    },
+    "harness": {
+      "adapterId": "static-review-harness",
+      "adapterVersion": "1.0",
+      "controls": {
+        "readOnlyInput": "enforced",
+        "noAgentWrite": "enforced",
+        "noAgentExecution": "enforced",
+        "noAgentNetwork": "enforced",
+        "freshContextPerReviewer": "enforced",
+        "crossSessionMemoryDisabled": "enforced"
+      }
+    },
+    "reviewers": [
+      {
+        "role": "code-quality",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 213845,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      },
+      {
+        "role": "security",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 215027,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      },
+      {
+        "role": "performance",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 214490,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      }
+    ],
+    "hostedSourceDisclosure": true,
+    "limitations": [
+      "code-quality: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "code-quality: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "code-quality: Context capacity and protocol reserve are caller-configured assumptions.",
+      "model usage reporting is unavailable",
+      "security: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "security: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "security: Context capacity and protocol reserve are caller-configured assumptions.",
+      "performance: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "performance: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "performance: Context capacity and protocol reserve are caller-configured assumptions."
+    ],
+    "sandbox": {
+      "status": "not-requested"
+    },
+    "audit": {
+      "enabled": false,
+      "metadataOnly": true,
+      "retentionDays": 0
+    }
+  },
+  "sandbox": {
+    "status": "not-requested"
+  }
+}

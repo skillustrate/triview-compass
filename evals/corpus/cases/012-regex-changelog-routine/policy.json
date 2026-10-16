@@ -1,0 +1,88 @@
+{
+  "contractVersion": "1.0",
+  "mode": "full",
+  "reviewers": [
+    "code-quality",
+    "security",
+    "performance"
+  ],
+  "budgets": {
+    "maxFiles": 50,
+    "maxChangedLines": 6000,
+    "maxLinesPerFile": 2000,
+    "maxBytesPerFile": 1048576,
+    "maxInputTokensPerReviewer": 190000,
+    "maxOutputTokensPerReviewer": 2000,
+    "maxModelCalls": 3,
+    "timeoutSeconds": 120
+  },
+  "dataPolicy": {
+    "mode": "approved-hosted",
+    "selectedProvider": "anthropic-claude-code",
+    "allowedProviders": [
+      "anthropic-claude-code"
+    ]
+  },
+  "pathPolicy": {
+    "excludedPathGlobs": [
+      ".github/**",
+      ".gitignore",
+      ".ignore",
+      ".vim/**",
+      "AI_POLICY.md",
+      "Cargo.toml",
+      "Cross.toml",
+      "LICENSE-APACHE",
+      "LICENSE-MIT",
+      "README.md",
+      "UNICODE.md",
+      "bench/**",
+      "fuzz/**",
+      "record/**",
+      "regex-automata/**",
+      "regex-capi/**",
+      "regex-cli/**",
+      "regex-lite/**",
+      "regex-syntax/**",
+      "regex-test/**",
+      "rustfmt.toml",
+      "src/**",
+      "test",
+      "testdata/**",
+      "tests/**"
+    ],
+    "generatedPathGlobs": [
+      "**/node_modules/**",
+      "**/vendor/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/coverage/**"
+    ],
+    "symlinkHandling": "reject",
+    "binaryHandling": "report-and-skip"
+  },
+  "secretPolicy": {
+    "scannerRequired": true,
+    "sensitivePathGlobs": [
+      ".env",
+      ".env.*",
+      "**/.env",
+      "**/.env.*",
+      "**/.aws/**",
+      "**/.ssh/**",
+      "**/.config/gcloud/**",
+      "**/credentials",
+      "**/credentials.*",
+      "**/*.pem",
+      "**/*.key",
+      "**/*.p12",
+      "**/*.pfx"
+    ],
+    "onScannerFailure": "stop-review"
+  },
+  "sandbox": {
+    "executionRequested": false,
+    "backend": "none",
+    "network": "disabled"
+  }
+}

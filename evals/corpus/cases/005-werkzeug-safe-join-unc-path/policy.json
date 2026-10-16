@@ -1,0 +1,122 @@
+{
+  "contractVersion": "1.0",
+  "mode": "full",
+  "reviewers": [
+    "code-quality",
+    "security",
+    "performance"
+  ],
+  "budgets": {
+    "maxFiles": 50,
+    "maxChangedLines": 6000,
+    "maxLinesPerFile": 2000,
+    "maxBytesPerFile": 1048576,
+    "maxInputTokensPerReviewer": 100000,
+    "maxOutputTokensPerReviewer": 2000,
+    "maxModelCalls": 3,
+    "timeoutSeconds": 120
+  },
+  "dataPolicy": {
+    "mode": "approved-hosted",
+    "selectedProvider": "anthropic-claude-code",
+    "allowedProviders": [
+      "anthropic-claude-code"
+    ]
+  },
+  "pathPolicy": {
+    "excludedPathGlobs": [
+      ".devcontainer/**",
+      ".editorconfig",
+      ".gitattributes",
+      ".github/**",
+      ".gitignore",
+      ".pre-commit-config.yaml",
+      ".readthedocs.yaml",
+      "CHANGES.rst",
+      "CODE_OF_CONDUCT.md",
+      "CONTRIBUTING.rst",
+      "LICENSE.txt",
+      "README.md",
+      "docs/**",
+      "examples/**",
+      "pyproject.toml",
+      "requirements/**",
+      "src/werkzeug/__init__.py",
+      "src/werkzeug/_internal.py",
+      "src/werkzeug/_reloader.py",
+      "src/werkzeug/datastructures/**",
+      "src/werkzeug/debug/**",
+      "src/werkzeug/exceptions.py",
+      "src/werkzeug/formparser.py",
+      "src/werkzeug/http.py",
+      "src/werkzeug/local.py",
+      "src/werkzeug/middleware/**",
+      "src/werkzeug/py.typed",
+      "src/werkzeug/routing/**",
+      "src/werkzeug/sansio/**",
+      "src/werkzeug/serving.py",
+      "src/werkzeug/test.py",
+      "src/werkzeug/testapp.py",
+      "src/werkzeug/urls.py",
+      "src/werkzeug/user_agent.py",
+      "src/werkzeug/utils.py",
+      "src/werkzeug/wrappers/**",
+      "src/werkzeug/wsgi.py",
+      "tests/conftest.py",
+      "tests/live_apps/**",
+      "tests/middleware/**",
+      "tests/multipart/**",
+      "tests/res/**",
+      "tests/sansio/**",
+      "tests/test_datastructures.py",
+      "tests/test_debug.py",
+      "tests/test_exceptions.py",
+      "tests/test_formparser.py",
+      "tests/test_http.py",
+      "tests/test_internal.py",
+      "tests/test_local.py",
+      "tests/test_routing.py",
+      "tests/test_send_file.py",
+      "tests/test_serving.py",
+      "tests/test_test.py",
+      "tests/test_urls.py",
+      "tests/test_utils.py",
+      "tests/test_wrappers.py",
+      "tests/test_wsgi.py",
+      "tox.ini"
+    ],
+    "generatedPathGlobs": [
+      "**/node_modules/**",
+      "**/vendor/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/coverage/**"
+    ],
+    "symlinkHandling": "reject",
+    "binaryHandling": "report-and-skip"
+  },
+  "secretPolicy": {
+    "scannerRequired": true,
+    "sensitivePathGlobs": [
+      ".env",
+      ".env.*",
+      "**/.env",
+      "**/.env.*",
+      "**/.aws/**",
+      "**/.ssh/**",
+      "**/.config/gcloud/**",
+      "**/credentials",
+      "**/credentials.*",
+      "**/*.pem",
+      "**/*.key",
+      "**/*.p12",
+      "**/*.pfx"
+    ],
+    "onScannerFailure": "stop-review"
+  },
+  "sandbox": {
+    "executionRequested": false,
+    "backend": "none",
+    "network": "disabled"
+  }
+}

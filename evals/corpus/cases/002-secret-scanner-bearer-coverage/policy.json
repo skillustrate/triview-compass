@@ -1,0 +1,93 @@
+{
+  "contractVersion": "1.0",
+  "mode": "full",
+  "reviewers": [
+    "code-quality",
+    "security",
+    "performance"
+  ],
+  "budgets": {
+    "maxFiles": 50,
+    "maxChangedLines": 6000,
+    "maxLinesPerFile": 2000,
+    "maxBytesPerFile": 1048576,
+    "maxInputTokensPerReviewer": 100000,
+    "maxOutputTokensPerReviewer": 2000,
+    "maxModelCalls": 3,
+    "timeoutSeconds": 120
+  },
+  "dataPolicy": {
+    "mode": "approved-hosted",
+    "selectedProvider": "anthropic-claude-code",
+    "allowedProviders": [
+      "anthropic-claude-code"
+    ]
+  },
+  "pathPolicy": {
+    "excludedPathGlobs": [
+      "triview-compass/.gitattributes",
+      "triview-compass/.gitignore",
+      "triview-compass/LICENSE",
+      "triview-compass/README.md",
+      "triview-compass/SECURITY.md",
+      "triview-compass/STATE.md",
+      "triview-compass/adapters/**",
+      "triview-compass/agents/**",
+      "triview-compass/contracts/**",
+      "triview-compass/design.md",
+      "triview-compass/evals/**",
+      "triview-compass/examples/**",
+      "triview-compass/package-lock.json",
+      "triview-compass/package.json",
+      "triview-compass/plan.md",
+      "triview-compass/skills/**",
+      "triview-compass/src/README.md",
+      "triview-compass/src/adapters/**",
+      "triview-compass/src/cli/**",
+      "triview-compass/src/core/README.md",
+      "triview-compass/src/core/audit.js",
+      "triview-compass/src/core/contracts.js",
+      "triview-compass/src/core/errors.js",
+      "triview-compass/src/core/git-capture.js",
+      "triview-compass/src/core/model-preflight.js",
+      "triview-compass/tests/README.md",
+      "triview-compass/tests/audit.test.js",
+      "triview-compass/tests/contract-preflight.test.js",
+      "triview-compass/tests/git-preflight.test.js",
+      "triview-compass/tests/preflight.test.js"
+    ],
+    "generatedPathGlobs": [
+      "**/node_modules/**",
+      "**/vendor/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/coverage/**"
+    ],
+    "symlinkHandling": "reject",
+    "binaryHandling": "report-and-skip"
+  },
+  "secretPolicy": {
+    "scannerRequired": true,
+    "sensitivePathGlobs": [
+      ".env",
+      ".env.*",
+      "**/.env",
+      "**/.env.*",
+      "**/.aws/**",
+      "**/.ssh/**",
+      "**/.config/gcloud/**",
+      "**/credentials",
+      "**/credentials.*",
+      "**/*.pem",
+      "**/*.key",
+      "**/*.p12",
+      "**/*.pfx"
+    ],
+    "onScannerFailure": "stop-review"
+  },
+  "sandbox": {
+    "executionRequested": false,
+    "backend": "none",
+    "network": "disabled"
+  }
+}

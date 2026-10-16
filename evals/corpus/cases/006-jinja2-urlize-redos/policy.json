@@ -1,0 +1,107 @@
+{
+  "contractVersion": "1.0",
+  "mode": "full",
+  "reviewers": [
+    "code-quality",
+    "security",
+    "performance"
+  ],
+  "budgets": {
+    "maxFiles": 50,
+    "maxChangedLines": 6000,
+    "maxLinesPerFile": 2000,
+    "maxBytesPerFile": 1048576,
+    "maxInputTokensPerReviewer": 120000,
+    "maxOutputTokensPerReviewer": 2000,
+    "maxModelCalls": 3,
+    "timeoutSeconds": 120
+  },
+  "dataPolicy": {
+    "mode": "approved-hosted",
+    "selectedProvider": "anthropic-claude-code",
+    "allowedProviders": [
+      "anthropic-claude-code"
+    ]
+  },
+  "pathPolicy": {
+    "excludedPathGlobs": [
+      ".azure-pipelines.yml",
+      ".github/**",
+      ".gitignore",
+      ".pre-commit-config.yaml",
+      "CHANGES.rst",
+      "CODE_OF_CONDUCT.md",
+      "LICENSE.rst",
+      "MANIFEST.in",
+      "README.rst",
+      "artwork/**",
+      "docs/**",
+      "examples/**",
+      "ext/**",
+      "scripts/**",
+      "setup.cfg",
+      "setup.py",
+      "src/jinja2/__init__.py",
+      "src/jinja2/_compat.py",
+      "src/jinja2/_identifier.py",
+      "src/jinja2/asyncfilters.py",
+      "src/jinja2/asyncsupport.py",
+      "src/jinja2/bccache.py",
+      "src/jinja2/compiler.py",
+      "src/jinja2/constants.py",
+      "src/jinja2/debug.py",
+      "src/jinja2/defaults.py",
+      "src/jinja2/environment.py",
+      "src/jinja2/exceptions.py",
+      "src/jinja2/ext.py",
+      "src/jinja2/filters.py",
+      "src/jinja2/idtracking.py",
+      "src/jinja2/lexer.py",
+      "src/jinja2/loaders.py",
+      "src/jinja2/meta.py",
+      "src/jinja2/nativetypes.py",
+      "src/jinja2/nodes.py",
+      "src/jinja2/optimizer.py",
+      "src/jinja2/parser.py",
+      "src/jinja2/runtime.py",
+      "src/jinja2/sandbox.py",
+      "src/jinja2/tests.py",
+      "src/jinja2/visitor.py",
+      "tests/**",
+      "tox.ini"
+    ],
+    "generatedPathGlobs": [
+      "**/node_modules/**",
+      "**/vendor/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/coverage/**"
+    ],
+    "symlinkHandling": "reject",
+    "binaryHandling": "report-and-skip"
+  },
+  "secretPolicy": {
+    "scannerRequired": true,
+    "sensitivePathGlobs": [
+      ".env",
+      ".env.*",
+      "**/.env",
+      "**/.env.*",
+      "**/.aws/**",
+      "**/.ssh/**",
+      "**/.config/gcloud/**",
+      "**/credentials",
+      "**/credentials.*",
+      "**/*.pem",
+      "**/*.key",
+      "**/*.p12",
+      "**/*.pfx"
+    ],
+    "onScannerFailure": "stop-review"
+  },
+  "sandbox": {
+    "executionRequested": false,
+    "backend": "none",
+    "network": "disabled"
+  }
+}

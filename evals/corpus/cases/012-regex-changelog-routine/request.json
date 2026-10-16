@@ -1,0 +1,8 @@
+{
+  "contractVersion": "1.0",
+  "input": {
+    "kind": "git",
+    "baseRevision": "782152f2531550ace5c3a542c4e5bddd5dc2d000",
+    "targetRevision": "ada2a5a6a08c8038daed9f77e1b4d9a3ca9930da"
+  }
+}

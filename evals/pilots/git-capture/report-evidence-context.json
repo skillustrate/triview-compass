@@ -1,0 +1,230 @@
+{
+  "contractVersion": "1.0",
+  "reviewId": "review-9de37c740b98a52be306",
+  "snapshotSha256": "9de37c740b98a52be3063947001e19713ae1197242053a7310f0339489cf0953",
+  "mode": "full",
+  "status": "complete",
+  "verdict": "recommend-approval",
+  "reviewers": [
+    {
+      "role": "code-quality",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-b51f1990-b9dd-4505-aa47-18ef2729386a",
+      "contextId": "ec45c3d9-8591-4704-87d1-86edf349de06"
+    },
+    {
+      "role": "security",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-0d23c95a-18a2-405e-9370-29340d6798c6",
+      "contextId": "25a71b56-2a9d-461d-b5db-95816b824c6a"
+    },
+    {
+      "role": "performance",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-bc966467-b5fd-4171-9dd6-6f1489da85e9",
+      "contextId": "e9578515-af97-4121-bd74-f506a7129980"
+    }
+  ],
+  "findings": [],
+  "unverifiableFindings": [],
+  "coverage": {
+    "includedPaths": [
+      "triview-compass/src/core/git-capture.js",
+      "triview-compass/tests/git-preflight.test.js"
+    ],
+    "excludedPaths": [
+      "triview-compass/README.md",
+      "triview-compass/RELEASE.md",
+      "triview-compass/SECURITY.md",
+      "triview-compass/STATE.md",
+      "triview-compass/agents/code-quality-reviewer.md",
+      "triview-compass/contracts/schemas/preflight-report.schema.json",
+      "triview-compass/docs/capability-matrix.md",
+      "triview-compass/docs/security-review.md",
+      "triview-compass/evals/README.md",
+      "triview-compass/evals/behavior/suite.json",
+      "triview-compass/evals/evidence/dependency-audit-2026-10-14.json",
+      "triview-compass/evals/evidence/phase6-bounded-anchor-2026-10-14.json",
+      "triview-compass/evals/evidence/phase6-clean-followup-2026-10-14.json",
+      "triview-compass/evals/evidence/phase6-final-sonnet-2026-10-14.json",
+      "triview-compass/evals/evidence/phase6-sonnet-2026-10-14.json",
+      "triview-compass/evals/evidence/phase6-sonnet-grounded-2026-10-14.json",
+      "triview-compass/evals/scripts/check-package.js",
+      "triview-compass/evals/scripts/check-release.js",
+      "triview-compass/evals/scripts/run-model-evals.js",
+      "triview-compass/evals/scripts/score-behavior.js",
+      "triview-compass/evals/security/threat-coverage.json",
+      "triview-compass/package.json",
+      "triview-compass/plan.md",
+      "triview-compass/skills/core-review/SKILL.md",
+      "triview-compass/skills/reviewer-briefs/core-review.md",
+      "triview-compass/src/adapters/model/README.md",
+      "triview-compass/src/adapters/model/claude-code.js",
+      "triview-compass/src/adapters/model/lm-studio.js",
+      "triview-compass/src/cli/README.md",
+      "triview-compass/src/cli/format-report.js",
+      "triview-compass/src/core/adapter-handshake.js",
+      "triview-compass/src/core/preflight-report.js",
+      "triview-compass/src/core/static-review.js",
+      "triview-compass/tests/behavior-score.test.js",
+      "triview-compass/tests/claude-code.test.js",
+      "triview-compass/tests/format-report.test.js",
+      "triview-compass/tests/lm-studio.test.js",
+      "triview-compass/tests/static-review.test.js"
+    ],
+    "skippedChecks": [
+      "excluded content was omitted from reviewer input.",
+      "Sandbox verification was not requested."
+    ]
+  },
+  "limitations": [
+    "code-quality: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "code-quality: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "code-quality: Context capacity and protocol reserve are caller-configured assumptions.",
+    "model usage reporting is unavailable",
+    "security: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "security: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "security: Context capacity and protocol reserve are caller-configured assumptions.",
+    "performance: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "performance: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "performance: Context capacity and protocol reserve are caller-configured assumptions."
+  ],
+  "preflight": {
+    "contractVersion": "1.0",
+    "kind": "preflight",
+    "status": "ready",
+    "reviewId": "review-9de37c740b98a52be306",
+    "snapshotSha256": "9de37c740b98a52be3063947001e19713ae1197242053a7310f0339489cf0953",
+    "policyVersion": "c1e05367cb6742621fcfe85caeecdc26df9264830a33b77332b68a450fd76f0f",
+    "mode": "full",
+    "promptVersions": [
+      {
+        "role": "code-quality",
+        "version": "27bce1d1c541c20c1d428ac3a4bd26b0431030779fb71aa43fa5e08a6f32106a"
+      },
+      {
+        "role": "security",
+        "version": "b0a7cbe7d719df231500d09537618cd4b0ca1bfd3ef6ee4601ee4c70ecb4ad14"
+      },
+      {
+        "role": "performance",
+        "version": "420a63cca0f8281775e8c0d000ed60a2048656da3f6eefe49bf3a80ca8e154a2"
+      }
+    ],
+    "scopeCounts": {
+      "included": 2,
+      "excluded": 38,
+      "binary": 0,
+      "generated": 0,
+      "oversized": 0
+    },
+    "budgets": {
+      "maxFiles": 50,
+      "maxChangedLines": 6000,
+      "maxLinesPerFile": 2000,
+      "maxBytesPerFile": 1048576,
+      "maxInputTokensPerReviewer": 100000,
+      "maxOutputTokensPerReviewer": 2000,
+      "maxModelCalls": 3,
+      "timeoutSeconds": 120
+    },
+    "harness": {
+      "adapterId": "static-review-harness",
+      "adapterVersion": "1.0",
+      "controls": {
+        "readOnlyInput": "enforced",
+        "noAgentWrite": "enforced",
+        "noAgentExecution": "enforced",
+        "noAgentNetwork": "enforced",
+        "freshContextPerReviewer": "enforced",
+        "crossSessionMemoryDisabled": "enforced"
+      }
+    },
+    "reviewers": [
+      {
+        "role": "code-quality",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 93833,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      },
+      {
+        "role": "security",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 95015,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      },
+      {
+        "role": "performance",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 94478,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      }
+    ],
+    "hostedSourceDisclosure": true,
+    "limitations": [
+      "code-quality: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "code-quality: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "code-quality: Context capacity and protocol reserve are caller-configured assumptions.",
+      "model usage reporting is unavailable",
+      "security: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "security: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "security: Context capacity and protocol reserve are caller-configured assumptions.",
+      "performance: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "performance: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "performance: Context capacity and protocol reserve are caller-configured assumptions."
+    ],
+    "sandbox": {
+      "status": "not-requested"
+    },
+    "audit": {
+      "enabled": false,
+      "metadataOnly": true,
+      "retentionDays": 0
+    }
+  },
+  "sandbox": {
+    "status": "not-requested"
+  }
+}

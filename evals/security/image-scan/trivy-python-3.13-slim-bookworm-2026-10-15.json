@@ -1,0 +1,125 @@
+{
+  "scanner": "trivy",
+  "scannerVersion": "0.76.0",
+  "scanDate": "2026-10-15",
+  "method": "podman save <image> -o image.tar, then `trivy image --input image.tar` inside the official aquasec/trivy container (no daemon socket, no host install); vulnerability DB mirrored from mirror.gcr.io/aquasec/trivy-db:2",
+  "image": "docker.io/library/python@sha256:2325bb286ec344af3e5898cc224b5844e2707ac6e26b1632516fd3edc84a5e26",
+  "imageTagAtScanTime": "python:3.13-slim-bookworm",
+  "baseOs": "debian 12.15 (bookworm)",
+  "context": "This is the pinned image used by src/adapters/sandbox/ for Phase 4/5/6 sandbox verification probes (see STATE.md). It is not a dependency of triview-compass itself; it is the container image the rootless Podman runner executes reviewed code inside. See evals/evidence/dependency-audit-2026-10-14.json for this project's own npm dependency audit, which is a separate, unrelated check.",
+  "severityCounts": {
+    "LOW": 99,
+    "HIGH": 62,
+    "MEDIUM": 119,
+    "CRITICAL": 5,
+    "UNKNOWN": 2
+  },
+  "totalVulnerabilities": 287,
+  "targets": [
+    {
+      "target": "/scan/pinned-image.tar (debian 12.15)",
+      "class": "os-pkgs",
+      "type": "debian",
+      "vulnerabilityCount": 281
+    },
+    {
+      "target": "Python",
+      "class": "lang-pkgs",
+      "type": "python-pkg",
+      "vulnerabilityCount": 6
+    }
+  ],
+  "criticalFindings": [
+    {
+      "id": "CVE-2025-7458",
+      "package": "libsqlite3-0",
+      "installedVersion": "3.40.1-2+deb12u2",
+      "fixedVersion": null,
+      "severity": "CRITICAL",
+      "title": "sqlite: SQLite integer overflow"
+    },
+    {
+      "id": "CVE-2026-13221",
+      "package": "perl-base",
+      "installedVersion": "5.36.0-7+deb12u3",
+      "fixedVersion": "5.36.0-7+deb12u4",
+      "severity": "CRITICAL",
+      "title": "perl: Perl: Incorrect regular expression processing via large regular expressions"
+    },
+    {
+      "id": "CVE-2026-42496",
+      "package": "perl-base",
+      "installedVersion": "5.36.0-7+deb12u3",
+      "fixedVersion": "5.36.0-7+deb12u4",
+      "severity": "CRITICAL",
+      "title": "perl-archive-tar: perl-archive-tar: Path traversal via crafted symlinks allows arbitrary file access"
+    },
+    {
+      "id": "CVE-2026-8376",
+      "package": "perl-base",
+      "installedVersion": "5.36.0-7+deb12u3",
+      "fixedVersion": "5.36.0-7+deb12u4",
+      "severity": "CRITICAL",
+      "title": "perl: Perl: Heap buffer overflow when compiling regular expressions on 32-bit builds"
+    },
+    {
+      "id": "CVE-2023-45853",
+      "package": "zlib1g",
+      "installedVersion": "1:1.2.13.dfsg-1",
+      "fixedVersion": null,
+      "severity": "CRITICAL",
+      "title": "zlib: integer overflow and resultant heap-based buffer overflow in zipOpenNewFileInZip4_6"
+    }
+  ],
+  "pythonPackageFindings": [
+    {
+      "id": "GHSA-6v7p-g79w-8964",
+      "package": "msgpack",
+      "installedVersion": "1.1.2",
+      "fixedVersion": "1.2.1",
+      "severity": "HIGH",
+      "title": "MessagePack for Python: Out-of-bounds read / crash on Unpacker reuse after a caught error"
+    },
+    {
+      "id": "CVE-2025-47273",
+      "package": "setuptools",
+      "installedVersion": "70.3.0",
+      "fixedVersion": "78.1.1",
+      "severity": "HIGH",
+      "title": "setuptools: Path Traversal Vulnerability in setuptools PackageIndex"
+    },
+    {
+      "id": "CVE-2026-59890",
+      "package": "setuptools",
+      "installedVersion": "70.3.0",
+      "fixedVersion": "83.0.0",
+      "severity": "MEDIUM",
+      "title": "setuptools: setuptools: MANIFEST.in exclusion bypass in sdist via Unicode normalization collision (NFC/NFD)"
+    },
+    {
+      "id": "CVE-2026-97687",
+      "package": "urllib3",
+      "installedVersion": "2.7.0",
+      "fixedVersion": "2.8.0",
+      "severity": "HIGH",
+      "title": "urllib3: urllib3: Traffic interception via HTTPS proxy TLS configuration override"
+    },
+    {
+      "id": "CVE-2026-97689",
+      "package": "urllib3",
+      "installedVersion": "2.7.0",
+      "fixedVersion": "2.8.0",
+      "severity": "HIGH",
+      "title": "urllib3: urllib3: Denial of Service via unbounded memory allocation in chunk parser"
+    },
+    {
+      "id": "CVE-2026-97688",
+      "package": "urllib3",
+      "installedVersion": "2.7.0",
+      "fixedVersion": "2.8.0",
+      "severity": "MEDIUM",
+      "title": "urllib3: urllib3: Denial of Service via infinite loop during chunked Deflate decoding"
+    }
+  ],
+  "caveat": "This is a point-in-time scan of one pinned image tag/digest using trivy's vulnerability database as of the scan date. It does not re-run automatically when the pinned image changes or when the vulnerability database updates; a stale result here does not reflect newly disclosed CVEs. Most findings (281/287) are Debian base-OS packages bundled by the upstream python image, not something this project's sandbox adapter controls directly beyond choosing which pinned digest to use."
+}

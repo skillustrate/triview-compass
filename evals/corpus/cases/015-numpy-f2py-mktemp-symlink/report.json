@@ -1,0 +1,218 @@
+{
+  "contractVersion": "1.0",
+  "reviewId": "review-d3c0a57f59c6088daca8",
+  "snapshotSha256": "d3c0a57f59c6088daca80f20266736dd599a37f573db4d59bed7a1bc84fe91f1",
+  "mode": "full",
+  "status": "complete",
+  "verdict": "request-changes",
+  "reviewers": [
+    {
+      "role": "code-quality",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-dad89b9f-8c9e-4087-8f12-9bf950203b0e",
+      "contextId": "fe4fa5ad-aa72-4059-ac4d-37e673f1e13a"
+    },
+    {
+      "role": "security",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-2dbb7893-2221-463b-93b0-fb552d68ac38",
+      "contextId": "b6b2b40a-66b6-4551-86f0-58f393f31b1b"
+    },
+    {
+      "role": "performance",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-6fc15a4d-aa32-40ca-8bb1-5dcaa95bc010",
+      "contextId": "ade28d0c-6aa8-440f-92e8-1eb180e36bba"
+    }
+  ],
+  "findings": [
+    {
+      "id": "finding-1",
+      "category": "correctness",
+      "severity": "Required",
+      "title": "compile() writes str to a binary-mode NamedTemporaryFile",
+      "impact": "tempfile.NamedTemporaryFile defaults to mode 'w+b'. Under Python 3, f.write(source) raises TypeError when source is str, so compile() fails when no source_fn is given. The module uses __future__ imports, which suggests it also targets Python 3. On Windows, the temp file can't be reopened by name while it is still open, so the subprocess f2py call would fail there too. The source_fn branch opens the file in text mode, so the two branches behave differently.",
+      "evidence": {
+        "path": "numpy/f2py/__init__.py",
+        "startLine": 30,
+        "endLine": 37
+      },
+      "recommendation": "Create the file in text mode, for example NamedTemporaryFile(mode='w', suffix='.f', delete=False). Remove it explicitly after the build, or write into a mkdtemp directory. Make both branches use the same mode.",
+      "sourceFindings": [
+        {
+          "reviewer": "code-quality",
+          "findingId": "f1",
+          "severity": "Required",
+          "confidence": 0.55
+        }
+      ],
+      "disagreement": false
+    }
+  ],
+  "unverifiableFindings": [],
+  "coverage": {
+    "includedPaths": [
+      "numpy/f2py/__init__.py",
+      "numpy/f2py/f2py2e.py"
+    ],
+    "excludedPaths": [
+      "numpy/core/tests/test_memmap.py",
+      "numpy/core/tests/test_multiarray.py",
+      "numpy/lib/tests/test_io.py"
+    ],
+    "skippedChecks": [
+      "excluded content was omitted from reviewer input.",
+      "Sandbox verification was not requested."
+    ]
+  },
+  "limitations": [
+    "code-quality: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "code-quality: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "code-quality: Context capacity and protocol reserve are caller-configured assumptions.",
+    "model usage reporting is unavailable",
+    "security: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "security: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "security: Context capacity and protocol reserve are caller-configured assumptions.",
+    "performance: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "performance: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "performance: Context capacity and protocol reserve are caller-configured assumptions."
+  ],
+  "preflight": {
+    "contractVersion": "1.0",
+    "kind": "preflight",
+    "status": "ready",
+    "reviewId": "review-d3c0a57f59c6088daca8",
+    "snapshotSha256": "d3c0a57f59c6088daca80f20266736dd599a37f573db4d59bed7a1bc84fe91f1",
+    "policyVersion": "5f8609a148cb73869344c305180b73b756ddcdcebbbc9777bb771b93c673efca",
+    "mode": "full",
+    "promptVersions": [
+      {
+        "role": "code-quality",
+        "version": "27bce1d1c541c20c1d428ac3a4bd26b0431030779fb71aa43fa5e08a6f32106a"
+      },
+      {
+        "role": "security",
+        "version": "b0a7cbe7d719df231500d09537618cd4b0ca1bfd3ef6ee4601ee4c70ecb4ad14"
+      },
+      {
+        "role": "performance",
+        "version": "420a63cca0f8281775e8c0d000ed60a2048656da3f6eefe49bf3a80ca8e154a2"
+      }
+    ],
+    "scopeCounts": {
+      "included": 2,
+      "excluded": 3,
+      "binary": 0,
+      "generated": 0,
+      "oversized": 0
+    },
+    "budgets": {
+      "maxFiles": 50,
+      "maxChangedLines": 6000,
+      "maxLinesPerFile": 2000,
+      "maxBytesPerFile": 1048576,
+      "maxInputTokensPerReviewer": 150000,
+      "maxOutputTokensPerReviewer": 2000,
+      "maxModelCalls": 3,
+      "timeoutSeconds": 120
+    },
+    "harness": {
+      "adapterId": "static-review-harness",
+      "adapterVersion": "1.0",
+      "controls": {
+        "readOnlyInput": "enforced",
+        "noAgentWrite": "enforced",
+        "noAgentExecution": "enforced",
+        "noAgentNetwork": "enforced",
+        "freshContextPerReviewer": "enforced",
+        "crossSessionMemoryDisabled": "enforced"
+      }
+    },
+    "reviewers": [
+      {
+        "role": "code-quality",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 101099,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      },
+      {
+        "role": "security",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 102281,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      },
+      {
+        "role": "performance",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 101744,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      }
+    ],
+    "hostedSourceDisclosure": true,
+    "limitations": [
+      "code-quality: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "code-quality: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "code-quality: Context capacity and protocol reserve are caller-configured assumptions.",
+      "model usage reporting is unavailable",
+      "security: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "security: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "security: Context capacity and protocol reserve are caller-configured assumptions.",
+      "performance: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "performance: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "performance: Context capacity and protocol reserve are caller-configured assumptions."
+    ],
+    "sandbox": {
+      "status": "not-requested"
+    },
+    "audit": {
+      "enabled": false,
+      "metadataOnly": true,
+      "retentionDays": 0
+    }
+  },
+  "sandbox": {
+    "status": "not-requested"
+  }
+}

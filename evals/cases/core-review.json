@@ -1,0 +1,20 @@
+{
+  "suite": "core-review",
+  "description": "Behavioral evals for evidence-backed, multi-axis code review.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review the provided diff that adds a user-search endpoint. Deliver a structured review.",
+      "expected_output": "A multi-axis review with severity-labelled findings and file:line references",
+      "files": [
+        "core-review/user-search.diff"
+      ],
+      "expectations": [
+        "Findings cover more than one axis (correctness, readability, architecture, security, performance)",
+        "Every finding carries a severity label from the skill's taxonomy",
+        "Security of user input is explicitly considered for the new endpoint",
+        "The review leads with high-leverage findings rather than nits"
+      ]
+    }
+  ]
+}

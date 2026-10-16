@@ -1,0 +1,323 @@
+{
+  "contractVersion": "1.0",
+  "reviewId": "review-cc6ec32c402e8c29c028",
+  "snapshotSha256": "cc6ec32c402e8c29c02857cad3708c75daad77bb569aadebc4dfeebaf7415ee3",
+  "mode": "full",
+  "status": "complete",
+  "verdict": "request-changes",
+  "reviewers": [
+    {
+      "role": "code-quality",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-3d7ae446-ef9f-42dd-bc25-5ac34a6d2b17",
+      "contextId": "733a328f-2513-4692-8fca-035270a9da85"
+    },
+    {
+      "role": "security",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-5be1215b-097e-485b-a87e-543475fc5f85",
+      "contextId": "3d1b3ba0-e6fd-4eff-88fc-b9363cf6b2b7"
+    },
+    {
+      "role": "performance",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-bfef4722-1b72-4d2e-9f2d-ac60424af627",
+      "contextId": "ebbeee11-5c21-4c10-8c5f-0e4e65f9f38f"
+    }
+  ],
+  "findings": [
+    {
+      "id": "finding-1",
+      "category": "reliability",
+      "severity": "Optional",
+      "title": "Parsed prompt fields are used without a shape check, so malformed prompts throw raw TypeErrors",
+      "impact": "data.prompt is parsed at line 144 and then dereferenced as prompt.role and prompt.skills.map(...). If the prompt is JSON `null`, a primitive, or an object without a `skills` array, the code throws a raw TypeError. For `null`, this happens at line 145. For a missing `skills` array, it happens at line 167, after the CLI call has already run and used quota. Every other failure path raises PreflightError with a stable code, so callers get inconsistent errors and a wasted invocation.",
+      "evidence": {
+        "path": "triview-compass/src/adapters/model/claude-code.js",
+        "startLine": 143,
+        "endLine": 168
+      },
+      "recommendation": "After parsing, check that prompt is a non-null object and that reviewId, snapshotSha256, promptVersion and skills have the expected types, and that skills is an array of objects with string ids. Do this before spawning the CLI, and call refuse('INVALID_ADAPTER_REQUEST') on any mismatch.",
+      "sourceFindings": [
+        {
+          "reviewer": "code-quality",
+          "findingId": "f1",
+          "severity": "Optional",
+          "confidence": 0.6
+        }
+      ],
+      "disagreement": false
+    },
+    {
+      "id": "finding-2",
+      "category": "security",
+      "severity": "Required",
+      "title": "Child CLI inherits full process environment, including unrelated secrets",
+      "impact": "The spawned claude process receives all of process.env, apart from a short denylist of Anthropic variables. If the CLI or any hook, plugin or config it loads is compromised or misbehaves, it can read other secrets, such as cloud credentials and tokens. The same environment may also change CLI behavior, for example through proxy variables or CLAUDE_* settings that aren't on the denylist. That undermines the 'enforced' isolation controls.",
+      "evidence": {
+        "path": "triview-compass/src/adapters/model/claude-code.js",
+        "startLine": 51,
+        "endLine": 54
+      },
+      "sourceFindings": [
+        {
+          "reviewer": "security",
+          "findingId": "s1",
+          "severity": "Required",
+          "confidence": 0.55
+        }
+      ],
+      "disagreement": false
+    },
+    {
+      "id": "finding-3",
+      "category": "security",
+      "severity": "Optional",
+      "title": "Sandbox flags are asserted as enforced without verification",
+      "impact": "The capabilities object reports freshContextPerReviewer, crossSessionMemoryDisabled and structuredOutput as 'enforced'. Enforcement relies only on CLI flags such as --safe-mode, --restricted and --permission-prompts, and the code never confirms the installed CLI honors them. An unknown flag makes the CLI fail closed. A CLI that ignores a flag silently would leave tools or memory enabled while the adapter still reports them as enforced. The cwd is also a real directory, and the prompt carries untrusted code, so prompt injection could reach any tool that stays enabled.",
+      "evidence": {
+        "path": "triview-compass/src/adapters/model/claude-code.js",
+        "startLine": 146,
+        "endLine": 150
+      },
+      "sourceFindings": [
+        {
+          "reviewer": "security",
+          "findingId": "s2",
+          "severity": "Optional",
+          "confidence": 0.35
+        }
+      ],
+      "disagreement": false
+    },
+    {
+      "id": "finding-4",
+      "category": "reliability",
+      "severity": "Optional",
+      "title": "Output size limit does not stop later chunks, and stdin write has no backpressure handling",
+      "impact": "After the 2 MB limit is exceeded, finish() is called once and later data events are still counted. Memory is bounded only because chunks stop being pushed. A hostile or buggy CLI that writes a lot of output could cost CPU until kill() takes effect. The kill happens without a timeout fallback, so a hung CLI that never exits holds the request open unless the caller passes a signal.",
+      "evidence": {
+        "path": "triview-compass/src/adapters/model/claude-code.js",
+        "startLine": 68,
+        "endLine": 81
+      },
+      "sourceFindings": [
+        {
+          "reviewer": "security",
+          "findingId": "s3",
+          "severity": "Optional",
+          "confidence": 0.3
+        }
+      ],
+      "disagreement": false
+    }
+  ],
+  "unverifiableFindings": [],
+  "coverage": {
+    "includedPaths": [
+      "triview-compass/src/adapters/model/claude-code.js"
+    ],
+    "excludedPaths": [
+      "triview-compass/README.md",
+      "triview-compass/SECURITY.md",
+      "triview-compass/STATE.md",
+      "triview-compass/adapters/README.md",
+      "triview-compass/agents/performance-reviewer.md",
+      "triview-compass/contracts/schemas/consolidated-report.schema.json",
+      "triview-compass/contracts/schemas/review-policy.schema.json",
+      "triview-compass/evals/scripts/probe-rest-token-count.js",
+      "triview-compass/evals/scripts/probe-sdk-token-count.js",
+      "triview-compass/evals/scripts/probe-structured-output.js",
+      "triview-compass/evals/scripts/probe-synthetic-review.js",
+      "triview-compass/examples/claude-code-policy.json",
+      "triview-compass/examples/claude-multi-route-policy.json",
+      "triview-compass/examples/claude-multi-route.json",
+      "triview-compass/package-lock.json",
+      "triview-compass/package.json",
+      "triview-compass/skills/README.md",
+      "triview-compass/skills/reviewer-briefs/adversarial-input-review.md",
+      "triview-compass/skills/reviewer-briefs/core-review.md",
+      "triview-compass/skills/reviewer-briefs/performance-review.md",
+      "triview-compass/skills/reviewer-briefs/security-review.md",
+      "triview-compass/src/README.md",
+      "triview-compass/src/adapters/harness/static-review.js",
+      "triview-compass/src/adapters/model/README.md",
+      "triview-compass/src/adapters/model/lm-studio.js",
+      "triview-compass/src/cli/README.md",
+      "triview-compass/src/cli/review.js",
+      "triview-compass/src/core/README.md",
+      "triview-compass/src/core/adapter-handshake.js",
+      "triview-compass/src/core/audit-store.js",
+      "triview-compass/src/core/contracts.js",
+      "triview-compass/src/core/model-preflight.js",
+      "triview-compass/src/core/model-routing.js",
+      "triview-compass/src/core/prepare-review.js",
+      "triview-compass/src/core/prompt-builder.js",
+      "triview-compass/src/core/review-dispatch.js",
+      "triview-compass/src/core/static-review.js",
+      "triview-compass/tests/README.md",
+      "triview-compass/tests/audit-store.test.js",
+      "triview-compass/tests/claude-code.test.js",
+      "triview-compass/tests/lm-studio.test.js",
+      "triview-compass/tests/model-routing.test.js",
+      "triview-compass/tests/prompt-builder.test.js",
+      "triview-compass/tests/review-dispatch.test.js",
+      "triview-compass/tests/static-review-harness.test.js",
+      "triview-compass/tests/static-review.test.js"
+    ],
+    "skippedChecks": [
+      "excluded content was omitted from reviewer input.",
+      "Sandbox verification was not requested."
+    ]
+  },
+  "limitations": [
+    "code-quality: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "code-quality: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "code-quality: Context capacity and protocol reserve are caller-configured assumptions.",
+    "model usage reporting is unavailable",
+    "security: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "security: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "security: Context capacity and protocol reserve are caller-configured assumptions.",
+    "performance: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "performance: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "performance: Context capacity and protocol reserve are caller-configured assumptions."
+  ],
+  "preflight": {
+    "contractVersion": "1.0",
+    "kind": "preflight",
+    "status": "ready",
+    "reviewId": "review-cc6ec32c402e8c29c028",
+    "snapshotSha256": "cc6ec32c402e8c29c02857cad3708c75daad77bb569aadebc4dfeebaf7415ee3",
+    "policyVersion": "ae309bc6d8c94521e982e9734e31033ce5d204aea5b7f7e31ed878dd093d185d",
+    "mode": "full",
+    "promptVersions": [
+      {
+        "role": "code-quality",
+        "version": "27bce1d1c541c20c1d428ac3a4bd26b0431030779fb71aa43fa5e08a6f32106a"
+      },
+      {
+        "role": "security",
+        "version": "b0a7cbe7d719df231500d09537618cd4b0ca1bfd3ef6ee4601ee4c70ecb4ad14"
+      },
+      {
+        "role": "performance",
+        "version": "420a63cca0f8281775e8c0d000ed60a2048656da3f6eefe49bf3a80ca8e154a2"
+      }
+    ],
+    "scopeCounts": {
+      "included": 1,
+      "excluded": 46,
+      "binary": 0,
+      "generated": 0,
+      "oversized": 0
+    },
+    "budgets": {
+      "maxFiles": 50,
+      "maxChangedLines": 6000,
+      "maxLinesPerFile": 2000,
+      "maxBytesPerFile": 1048576,
+      "maxInputTokensPerReviewer": 100000,
+      "maxOutputTokensPerReviewer": 2000,
+      "maxModelCalls": 3,
+      "timeoutSeconds": 120
+    },
+    "harness": {
+      "adapterId": "static-review-harness",
+      "adapterVersion": "1.0",
+      "controls": {
+        "readOnlyInput": "enforced",
+        "noAgentWrite": "enforced",
+        "noAgentExecution": "enforced",
+        "noAgentNetwork": "enforced",
+        "freshContextPerReviewer": "enforced",
+        "crossSessionMemoryDisabled": "enforced"
+      }
+    },
+    "reviewers": [
+      {
+        "role": "code-quality",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 82338,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      },
+      {
+        "role": "security",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 83520,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      },
+      {
+        "role": "performance",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 82983,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      }
+    ],
+    "hostedSourceDisclosure": true,
+    "limitations": [
+      "code-quality: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "code-quality: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "code-quality: Context capacity and protocol reserve are caller-configured assumptions.",
+      "model usage reporting is unavailable",
+      "security: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "security: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "security: Context capacity and protocol reserve are caller-configured assumptions.",
+      "performance: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "performance: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "performance: Context capacity and protocol reserve are caller-configured assumptions."
+    ],
+    "sandbox": {
+      "status": "not-requested"
+    },
+    "audit": {
+      "enabled": false,
+      "metadataOnly": true,
+      "retentionDays": 0
+    }
+  },
+  "sandbox": {
+    "status": "not-requested"
+  }
+}

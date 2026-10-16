@@ -1,0 +1,59 @@
+{
+  "id": "003-claude-code-env-clear-gap",
+  "status": "dispositioned",
+  "addedDate": "2026-10-14",
+  "dispositionedDate": "2026-10-14",
+  "source": {
+    "repository": "self (triview-compass)",
+    "baseRevision": "3b88e8d951ada4433e5968ffa2ff3c34266f442b",
+    "targetRevision": "a09904d8d1b574b5cc59dec40e16b9cf173f1858"
+  },
+  "groundTruth": {
+    "type": "known-defect-present",
+    "description": "The target revision adds src/adapters/model/claude-code.js (the file does not exist at the base revision, so this is a pure addition). The new invokeCli() function builds the spawned CLI's environment as `{ ...process.env, ... }` and then deletes only a fixed, enumerated list of seven variable names (ANTHROPIC_API_KEY, ANTHROPIC_AUTH_TOKEN, ANTHROPIC_BASE_URL, CLAUDE_CODE_USE_BEDROCK, CLAUDE_CODE_USE_VERTEX, CLAUDE_CODE_USE_FOUNDRY, CLAUDE_CODE_USE_ANTHROPIC_AWS) at lines 51-54. Any other inherited ANTHROPIC_*/CLAUDE_* environment variable not on that list (e.g. a logging, tracing, or future provider-override variable) passes through unblocked into the subprocess, undermining the project's own stated control of a 'fixed review profile' uncontaminated by the caller's environment. This is a real, confirmed, later-fixed defect: it exactly matches the 'Inherited Claude logging/provider/model override variables could weaken the fixed review profile' finding in docs/security-review.md, whose resolution (switching to prefix-based clearing of every ANTHROPIC_*/CLAUDE_* variable) was shipped in commit da82cbe, well after this introducing commit.",
+    "evidence": [
+      { "path": "triview-compass/src/adapters/model/claude-code.js", "startLine": 51, "endLine": 54, "note": "enumerated env-var denylist; incomplete by construction" }
+    ],
+    "expectedVerdict": "request-changes-with-a-required-or-critical-security-finding-on-the-env-clearing-gap",
+    "confirmingFix": "da82cbe (docs/security-review.md: 'Clear inherited CLAUDE_*/ANTHROPIC_* ...')"
+  },
+  "requestPath": "./request.json",
+  "policyPath": "./policy.json",
+  "runs": [
+    {
+      "label": "live run, Claude Code CLI 2.1.299",
+      "reportPath": "./report.json",
+      "dispositions": [
+        {
+          "findingId": "finding-2",
+          "reviewer": "security",
+          "severity": "Required",
+          "verdict": "confirmed",
+          "note": "Exactly matches the known ground-truth defect. Evidence lines 51-54 are precisely the enumerated denylist block. The claim (full process.env inherited apart from a short denylist; a compromised CLI/hook/plugin could read unrelated secrets) is correct and realistic, and this exact gap was independently fixed later in da82cbe per docs/security-review.md. This is the known-defect case's primary confirmed finding."
+        },
+        {
+          "findingId": "finding-1",
+          "reviewer": "code-quality",
+          "severity": "Optional",
+          "verdict": "confirmed",
+          "note": "Accurate: parsePayload's data.prompt is JSON.parse'd at line 144 with no shape validation before prompt.role (line 145) and prompt.skills.map(...) (line 167) are dereferenced. A JSON `null` or an object missing `skills` throws an uncaught TypeError instead of a controlled refuse(). Verified by reading the cited lines directly; severity (Optional, not Required) is reasonable since the impact is an ungraceful internal error, not a security bypass."
+        },
+        {
+          "findingId": "finding-3",
+          "reviewer": "security",
+          "severity": "Optional",
+          "verdict": "confirmed",
+          "note": "Accurate as far as it goes: the --safe-mode/--restricted/--permission-* flags at lines 146-150 are the enforcement mechanism for the capabilities declared 'enforced' at lines 102-103, and nothing in this file verifies the installed CLI actually honors them. This restates an already-documented, accepted project-level limitation (docs/capability-matrix.md: 'A capability document is an assertion... prompts... do not independently prove enforcement'), so it is correct and evidence-grounded but not a newly discovered gap; Optional severity is appropriate."
+        },
+        {
+          "findingId": "finding-4",
+          "reviewer": "code-quality",
+          "severity": "Optional",
+          "verdict": "confirmed",
+          "note": "Accurate: after MAX_REPLY_BYTES is exceeded (line 70), finish() settles the promise once, but the stdout 'data' listener remains attached and bytes keeps incrementing on further chunks until the killed child actually stops emitting; child.kill() uses the default SIGTERM with no SIGKILL escalation if the child ignores it. Verified by reading lines 68-81 directly. Notably, da82cbe later hardened exactly this path (explicit child.kill('SIGKILL'), a timeout with forced termination for a different stalled-process case) - consistent with this being a real, if minor, gap at the time of this diff."
+        }
+      ]
+    }
+  ],
+  "notes": "This is the corpus's first 'known-defect-present' case, filling the gap flagged in evals/corpus/README.md: the other two cases are both 'known-fix' (expect no blocking findings). Found by walking this project's own git history for a commit whose diff could be matched against a specific, already-documented finding in docs/security-review.md, then using `git log --follow` to locate the exact introducing commit (a09904d) rather than the fixing commit (da82cbe). Policy scoped to only src/adapters/model/claude-code.js via scope-policy.js against the target revision's tree (verified zero deletions between base and target via `git diff --name-status`, so the target-tree-only exclusion list is safe). The live run produced four findings; all four were verified against the actual base-revision source and confirmed accurate, including the one that matches the known ground-truth defect exactly (finding-2, Required, security, lines 51-54)."
+}

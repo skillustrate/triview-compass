@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Trusted Host Integration Context",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "currentHarness", "harnesses"],
+  "properties": {
+    "contractVersion": { "const": "1.0" },
+    "currentHarness": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+    "harnesses": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 32,
+      "propertyNames": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+      "additionalProperties": { "$ref": "#/$defs/harness" }
+    }
+  },
+  "$defs": {
+    "harness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adapterId", "providerId", "modelId", "dataHandling", "runtime"],
+      "properties": {
+        "adapterId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+        "providerId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+        "modelId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+        "dataHandling": { "enum": ["local", "hosted"] },
+        "runtime": {
+          "oneOf": [
+            {
+              "type": "object", "additionalProperties": false,
+              "required": ["kind", "module", "export"],
+              "properties": {
+                "kind": { "const": "adapter-module" },
+                "module": { "type": "string", "minLength": 1 },
+                "export": { "type": "string", "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*$" },
+                "config": { "type": "object" }
+              }
+            },
+            {
+              "type": "object", "additionalProperties": false,
+              "required": ["kind", "adapterId", "modelId", "contextWindowTokens"],
+              "properties": {
+                "kind": { "const": "claude-code" },
+                "adapterId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+                "modelId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+                "contextWindowTokens": { "type": "integer", "minimum": 1 },
+                "configDir": { "type": "string", "minLength": 1 }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

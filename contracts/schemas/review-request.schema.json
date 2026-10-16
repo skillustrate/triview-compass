@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Raw Local Review Request",
+  "description": "Pre-sanitization input. Keep local; never submit this document to a model or default log.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "input"],
+  "properties": {
+    "contractVersion": { "const": "1.0" },
+    "input": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "baseRevision", "targetRevision"],
+          "properties": {
+            "kind": { "const": "git" },
+            "baseRevision": { "$ref": "common.schema.json#/$defs/gitCommitId" },
+            "targetRevision": { "$ref": "common.schema.json#/$defs/gitCommitId" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "files"],
+          "properties": {
+            "kind": { "const": "files" },
+            "files": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["path", "changeType", "content"],
+                "properties": {
+                  "path": { "$ref": "common.schema.json#/$defs/relativePath" },
+                  "previousPath": { "$ref": "common.schema.json#/$defs/relativePath" },
+                  "changeType": { "type": "string", "enum": ["added", "modified", "deleted", "renamed"] },
+                  "content": { "type": "string" }
+                },
+                "allOf": [
+                  {
+                    "if": { "properties": { "changeType": { "const": "renamed" } }, "required": ["changeType"] },
+                    "then": { "required": ["previousPath"] },
+                    "else": { "not": { "required": ["previousPath"] } }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

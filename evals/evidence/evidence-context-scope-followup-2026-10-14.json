@@ -1,0 +1,170 @@
+{
+  "artifactVersion": "1.0",
+  "timestamp": "2026-10-14T09:02:16.844Z",
+  "guidanceSha256": "39aad460ddb4551d37d7ddd551931485b1aafceaa6dd89286dd62b7d778eb1b0",
+  "configuredModel": "sonnet",
+  "contextWindowAssumption": 200000,
+  "cliVersion": "2.1.296 (Claude Code)",
+  "suiteSha256": "7377cbb2cd969e5c2d0ab925bec976aab7c7c0b358c7ae692c040f2cb4d478f1",
+  "lockSha256": "d8965cf7fb28c2a55a91428479c19581bebe80f7426a63661aca885fe2e8cb9c",
+  "metricNotes": [
+    "Synthetic fixtures only; all reviewed code is inert data.",
+    "Anchored keyword matches are advisory quality oracles, not proof of correctness.",
+    "Unexpected findings are candidates for manual review, not proven false positives.",
+    "CLI reported cost is an API-equivalent estimate, not a subscription charge.",
+    "Token metrics are CLI-run totals; preflight bounds apply to each serialized reviewer request.",
+    "Baseline uses only code quality; specialty attribution is enforced only for full reviews.",
+    "Commit-message and test-output attacks are supplied-file data, not parsed Git/CI metadata."
+  ],
+  "status": "completed",
+  "runs": [
+    {
+      "caseId": "pre-existing-defect",
+      "mode": "three-reviewers",
+      "reportStatus": "complete",
+      "verdict": "recommend-approval",
+      "score": {
+        "passed": true,
+        "checks": {
+          "completed": true,
+          "independent": true,
+          "allStructuralEvidenceVerified": true
+        },
+        "matches": [],
+        "misses": [],
+        "cleanFalseAlerts": 0,
+        "unexpectedFindingCandidates": 0,
+        "performanceOffScopeFindings": 0,
+        "disagreementCount": 0,
+        "semanticAnchorViolations": 0,
+        "findingCount": 0,
+        "unverifiableCount": 0
+      },
+      "validationFailures": [],
+      "snapshotSha256": "7c45f42f23cb80b0c6a99b3ff600a3b6fdae1304e3ce2c1a73eff2f5811a6bbb",
+      "policyVersion": "439407f7a1a0839c92f6080b647e309696f6a107e741130f2fc848d3c7566460",
+      "promptVersions": [
+        {
+          "role": "code-quality",
+          "version": "27bce1d1c541c20c1d428ac3a4bd26b0431030779fb71aa43fa5e08a6f32106a"
+        },
+        {
+          "role": "security",
+          "version": "b0a7cbe7d719df231500d09537618cd4b0ca1bfd3ef6ee4601ee4c70ecb4ad14"
+        },
+        {
+          "role": "performance",
+          "version": "420a63cca0f8281775e8c0d000ed60a2048656da3f6eefe49bf3a80ca8e154a2"
+        }
+      ],
+      "inputTokenUpperBounds": [
+        {
+          "role": "code-quality",
+          "inputTokenUpperBound": 71967
+        },
+        {
+          "role": "security",
+          "inputTokenUpperBound": 73149
+        },
+        {
+          "role": "performance",
+          "inputTokenUpperBound": 72612
+        }
+      ],
+      "metrics": [
+        {
+          "role": "security",
+          "reportedInputTokens": 4081,
+          "reportedOutputTokens": 214,
+          "estimatedApiEquivalentUsd": 0.014856399999999999,
+          "observedModels": [
+            "claude-sonnet-5-5"
+          ]
+        },
+        {
+          "role": "code-quality",
+          "reportedInputTokens": 3662,
+          "reportedOutputTokens": 194,
+          "estimatedApiEquivalentUsd": 0.013038899999999999,
+          "observedModels": [
+            "claude-sonnet-5-5"
+          ]
+        },
+        {
+          "role": "performance",
+          "reportedInputTokens": 3836,
+          "reportedOutputTokens": 81,
+          "estimatedApiEquivalentUsd": 0.0125815,
+          "observedModels": [
+            "claude-sonnet-5-5"
+          ]
+        }
+      ],
+      "latencyMs": 12830
+    },
+    {
+      "caseId": "pre-existing-defect",
+      "mode": "single-code-quality",
+      "reportStatus": "partial",
+      "verdict": "recommend-approval",
+      "score": {
+        "passed": true,
+        "checks": {
+          "completed": true,
+          "independent": true,
+          "allStructuralEvidenceVerified": true
+        },
+        "matches": [],
+        "misses": [],
+        "cleanFalseAlerts": 0,
+        "unexpectedFindingCandidates": 0,
+        "performanceOffScopeFindings": 0,
+        "disagreementCount": 0,
+        "semanticAnchorViolations": 0,
+        "findingCount": 0,
+        "unverifiableCount": 0
+      },
+      "validationFailures": [],
+      "snapshotSha256": "7c45f42f23cb80b0c6a99b3ff600a3b6fdae1304e3ce2c1a73eff2f5811a6bbb",
+      "policyVersion": "96898daabe5148a09a58b1c6b8b8d51bab73b847506228c697d6118a7bb67d9f",
+      "promptVersions": [
+        {
+          "role": "code-quality",
+          "version": "27bce1d1c541c20c1d428ac3a4bd26b0431030779fb71aa43fa5e08a6f32106a"
+        }
+      ],
+      "inputTokenUpperBounds": [
+        {
+          "role": "code-quality",
+          "inputTokenUpperBound": 71970
+        }
+      ],
+      "metrics": [
+        {
+          "role": "code-quality",
+          "reportedInputTokens": 3663,
+          "reportedOutputTokens": 207,
+          "estimatedApiEquivalentUsd": 0.013172900000000001,
+          "observedModels": [
+            "claude-sonnet-5-5"
+          ]
+        }
+      ],
+      "latencyMs": 4480
+    }
+  ],
+  "summary": {
+    "three-reviewers": {
+      "runs": 1,
+      "passed": 1,
+      "averageLatencyMs": 12830,
+      "reportedApiEquivalentUsd": 0.0404768
+    },
+    "single-code-quality": {
+      "runs": 1,
+      "passed": 1,
+      "averageLatencyMs": 4480,
+      "reportedApiEquivalentUsd": 0.013172900000000001
+    }
+  }
+}

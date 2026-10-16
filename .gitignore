@@ -1,0 +1,21 @@
+.DS_Store
+node_modules/
+.env
+.env.*
+*.log
+__pycache__/
+evals/results/
+coverage/
+dist/
+
+# Local review output and optional user-curated project conventions.
+.reviewer/
+
+# Internal working documents from private development: session handoff log,
+# phased implementation plan, code-review diary, architecture scratch notes.
+# Not written for an external reader and deliberately excluded from this
+# public repository's history.
+STATE.md
+plan.md
+review.md
+design.md

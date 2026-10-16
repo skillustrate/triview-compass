@@ -1,0 +1,32 @@
+{
+  "id": "002-secret-scanner-bearer-coverage",
+  "status": "dispositioned",
+  "addedDate": "2026-10-15",
+  "dispositionedDate": "2026-10-15",
+  "source": {
+    "repository": "self (triview-compass)",
+    "baseRevision": "0a42162691db273dcc8801f1ea0ecf0a7c2c6b75",
+    "targetRevision": "d89ead9268c90c1af74a748044943d70db0bcdf5"
+  },
+  "groundTruth": {
+    "type": "known-fix",
+    "description": "The target commit adds a regex pass that detects opaque Bearer-header tokens (20+ base64url characters) that the existing provider-specific patterns did not recognize, and de-duplicates against spans already matched by a more specific pattern. This closes a real, previously-documented secret-scanner coverage gap and ships with a passing regression test; it is not expected to produce a blocking finding.",
+    "evidence": [
+      { "path": "triview-compass/src/core/preflight.js", "note": "new Bearer-token regex pass inside scanSecrets(), guarded against double-counting an already-matched span" },
+      { "path": "triview-compass/tests/secret-scanning.test.js", "note": "regression coverage for the new pattern" }
+    ],
+    "expectedVerdict": "recommend-approval-with-no-blocking-findings",
+    "watchFor": "A reviewer flagging the regex itself (e.g. catastrophic-backtracking risk on the {20,} quantifier, or the de-duplication span-overlap logic) would be a legitimate, in-scope finding on the actual introduced change, not a false positive by definition — disposition it on its own merits rather than assuming 'known-fix' means 'no finding is ever valid' for this case."
+  },
+  "requestPath": "./request.json",
+  "policyPath": "./policy.json",
+  "runs": [
+    {
+      "label": "live run, Claude Code CLI 2.1.299 (requalified from the pinned 2.1.296 for this run; see STATE.md)",
+      "reportPath": "./report.json",
+      "dispositions": [],
+      "outcomeNote": "Report status is 'incomplete', not the expected 'recommend-approval-with-no-blocking-findings': code-quality and security reviewers completed with zero findings, but the performance reviewer failed with 'The reviewer returned unsafe or oversized output.' The included triview-compass/tests/secret-scanning.test.js fixture (included because it is part of this real diff) contains literal textbook secret-shaped strings (e.g. an AWS-key-pattern literal, a GitHub-token-pattern literal) that scanSecrets() is specifically built to catch, by design. review-dispatch.js's output scan (containsKnownSecret) does not distinguish 'oversized' from 'matched a known secret pattern' in its exposed failure reason, to avoid revealing which secret pattern tripped; at ~199 lines the report is far too small to hit the 2MB size cap, so a secret-pattern match in the performance reviewer's own output text (most likely quoting a line from the fixture as evidence) is the near-certain cause, though I cannot see the raw failed output to confirm which line, by the same design. There is no finding to disposition here: the performance role failed before producing a validated result, and the two completed reviewers produced zero findings on the actual code change (src/core/preflight.js's new Bearer-token regex pass), consistent with the known-fix ground truth for that file. The notable corpus result is structural, not about the code change: reviewing a file that is itself a secret-scanner test fixture reliably risks tripping the bidirectional output-scan control and should be expected, not treated as a defect in the reviewed change, in any future corpus case that includes a similar fixture file."
+    }
+  ],
+  "notes": "Blocked on CLI version pinning (adapter required exactly 2.1.296; installed CLI was 2.1.299) before this run. Requalified by bumping SUPPORTED_CLI_VERSION to 2.1.299 in src/adapters/model/claude-code.js, updating the matching test fixtures and docs, and rerunning the full deterministic suite (108 tests) first — see STATE.md for that requalification entry. Policy's pathPolicy.excludedPathGlobs was generated with evals/scripts/scope-policy.js against the target revision's tree rather than hand-maintained, and verified against `git diff --name-status` for the base..target range to confirm no deleted files were missed (none in this commit)."
+}

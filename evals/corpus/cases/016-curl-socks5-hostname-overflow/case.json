@@ -1,0 +1,32 @@
+{
+  "id": "016-curl-socks5-hostname-overflow",
+  "status": "dispositioned",
+  "addedDate": "2026-10-14",
+  "dispositionedDate": "2026-10-14",
+  "source": {
+    "repository": "external: curl/curl (https://github.com/curl/curl), cloned locally for this review",
+    "baseRevision": "09e25b9d94f4106eac8ca3a43b221bdc66f405e4",
+    "targetRevision": "fb4415d8aee6c1045be932a34fe6107c2f5ed147"
+  },
+  "groundTruth": {
+    "type": "known-fix",
+    "description": "Fixes CVE-2023-38545, a widely-publicized heap buffer overflow in curl's SOCKS5 proxy handshake (lib/socks.c). First C/systems-programming case in the corpus (prior cases are all memory-safe languages). do_SOCKS5() is a state machine re-entered across multiple calls/connection reuses; the >255-byte hostname check that was supposed to force a fallback to local DNS resolution ran only in the CONNECT_SOCKS_INIT state, but the state machine can reach the remote-resolve code path (CONNECT_RESOLVE_REMOTE, which memcpy()s the raw hostname into a fixed connection buffer using a 1-byte length field) without re-running that check on every pass - notably on an HTTPS-proxy redirect to a new, longer hostname after the connection has already progressed past CONNECT_SOCKS_INIT. The fix makes the overlong-hostname case a hard error (CURLPX_LONG_HOSTNAME) instead of a same-pass variable flip, and fixes an unrelated signed/unsigned mismatch in the length-byte cast. The reviewed diff is a 6-line change to one function in one file; the exploitability depends on surrounding state-machine structure not itself touched by the diff, which this ground truth states from direct reading of the pre-fix code, not from running a working exploit (no C build toolchain was used to compile and reproduce this in a sandboxed manner).",
+    "evidence": [
+      { "path": "lib/socks.c", "startLine": 587, "endLine": 596, "note": "overlong-hostname detection changed from a silent same-pass fallback to a hard CURLPX_LONG_HOSTNAME error" },
+      { "path": "lib/socks.c", "startLine": 903, "endLine": 907, "note": "length-byte cast changed from signed char to unsigned char" }
+    ],
+    "expectedVerdict": "recommend-approval-with-no-blocking-findings",
+    "confirmingFix": "this commit itself; see https://curl.se/docs/CVE-2023-38545.html"
+  },
+  "requestPath": "./request.json",
+  "policyPath": "./policy.json",
+  "runs": [
+    {
+      "label": "live run, Claude Code CLI 2.1.299, external repository input, maxInputTokensPerReviewer 150000, context-window 250000",
+      "reportPath": "./report.json",
+      "dispositions": [],
+      "outcomeNote": "All three reviewers completed with zero findings against this 6-line single-file diff. Consistent with the other small, well-targeted known-fix cases in this corpus (005, 010), though notably not with case 013/015, where a similarly small-looking diff turned out to hide a real additional bug - a reminder that a clean result here doesn't generalize to 'small diffs are always clean,' only to this specific one."
+    }
+  ],
+  "notes": "The real commit also added tests/data/test728 and a Makefile.inc entry; excluded from the reviewed diff as test-only additions, consistent with how other cases in this corpus scope test files out."
+}

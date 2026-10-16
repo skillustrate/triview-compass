@@ -1,0 +1,29 @@
+{
+  "id": "020-curl-comment-typo-fixes",
+  "status": "dispositioned",
+  "addedDate": "2026-10-14",
+  "dispositionedDate": "2026-10-15",
+  "source": {
+    "repository": "external: curl/curl (https://github.com/curl/curl), cloned locally for this review",
+    "baseRevision": "323df4261c354206a68e4ee1dd39f30e606211ef",
+    "targetRevision": "0510e8b58c909dd7cfe6ce76ba2041a2b2d4fbff"
+  },
+  "groundTruth": {
+    "type": "known-clean",
+    "description": "A purely comment-text fix (found by the codespell tool): five single-word typo corrections ('soket'->'socket', 'ot'->'to', 'onging'/'messsages'->'ongoing'/'messages', 'malicous'->'malicious', 'alloced'->'allocated') across five different source files, with zero functional code changed anywhere. Third known-clean case (after 007, 012), and a deliberately different shape from those two: 007 and 012 are each a single whole file that is itself non-code (docs/changelog); this one is a multi-file diff entirely WITHIN real .c/.h source files, including a one-word comment edit three lines away from the exact SOCKS5 CVE-2023-38545 logic this corpus already reviewed in case 016 (lib/socks.c). This specifically tests whether a reviewer's judgment is driven by what the diff actually changes (a comment, nothing executable) rather than by surface signals like 'this is a security-sensitive file' or 'this touches the same function area as a known CVE.'",
+    "evidence": [],
+    "expectedVerdict": "recommend-approval-with-no-blocking-findings",
+    "confirmingFix": "n/a (known-clean, not a defect fix) - see curl commit 0510e8b58, closing curl/curl#12390"
+  },
+  "requestPath": "./request.json",
+  "policyPath": "./policy.json",
+  "runs": [
+    {
+      "label": "live run, Claude Code CLI 2.1.300, external repository input, maxInputTokensPerReviewer 420000, context-window 450000",
+      "reportPath": "./report.json",
+      "dispositions": [],
+      "outcomeNote": "All three reviewers completed cleanly (status: complete, verdict: recommend-approval) with zero findings against this five-file, comment-only typo-fix diff, consistent with the known-clean ground truth. Unlike 007/012 (a single whole non-code file each), this diff is entirely inside real .c/.h source files, including a one-word comment edit three lines from the SOCKS5 CVE-2023-38545 logic reviewed in case 016 (lib/socks.c) - all three reviewers correctly stayed silent rather than flagging the file's security-sensitive history or area as a pretext for a finding, matching this case's intended test of content-driven judgment over surface signals."
+    }
+  ],
+  "notes": "lib/http.c is 4,959 lines / 157KB at this revision (only one line of it actually changes); with all five included files together (~255KB combined), preflight's measured inputTokenUpperBound came to ~400-402k per reviewer - needed maxInputTokensPerReviewer raised to 420000 and --context-window to 450000, the largest budget this corpus has needed so far, confirming this corpus's established pattern (large included files need real headroom) scales to a multi-file, cross-the-codebase diff too, not just a single large file. This case also surfaced a CLI version requalification: the locally installed Claude Code CLI had auto-updated to 2.1.300 while the adapter's SUPPORTED_CLI_VERSION pin was still 2.1.299, causing a correct CAPABILITY_UNAVAILABLE preflight refusal. At the user's explicit direction, requalified following the exact 2.1.296->2.1.299 precedent: bumped the pin, updated matching literals in tests/claude-code.test.js and the current-tense docs (docs/capability-matrix.md, src/adapters/model/README.md, docs/security-review.md, src/cli/README.md, RELEASE.md, README.md; historical dated narrative in plan.md and STATE.md describing past 2.1.299 runs was left unchanged), reran npm test (112/112, no model calls) and the live synthetic suite (node evals/scripts/run-model-evals.js), which scored 10/10 three-reviewer cases and 10/10 baselines against CLI 2.1.300 (evals/evidence/evidence-context-sonnet-2026-10-15-cli2.1.300.json), then repointed check-release.js at that file. npm run check:release and npm run check:package both pass."
+}

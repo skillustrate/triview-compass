@@ -1,0 +1,31 @@
+{
+  "id": "014-regex-replacen-empty-match-bug",
+  "status": "dispositioned",
+  "addedDate": "2026-10-14",
+  "dispositionedDate": "2026-10-14",
+  "source": {
+    "repository": "external: rust-lang/regex (https://github.com/rust-lang/regex), cloned locally for this review",
+    "baseRevision": "dc9e382e2b96e943191880bc5bfdd79de5d0222a",
+    "targetRevision": "408add0f367613df70eb03cbad1ccf816f1c2cd4"
+  },
+  "groundTruth": {
+    "type": "known-fix",
+    "description": "A genuine non-security correctness fix (not security/DoS, unlike 010-013): Regex::replacen's old logic inferred 'no match occurred' from `last_match == 0`, but last_match is also 0 when a real match occurs at position 0 with zero length (e.g. the anchor `^` matching an empty string at the start of the text) - so replacen incorrectly returned the original text unchanged instead of performing the replacement. The fix uses a peekable iterator and checks `it.peek().is_none()` to correctly distinguish 'no match at all' from 'a zero-width match at position 0'. Second non-security correctness case after 008, and the second in Rust after 010/012.",
+    "evidence": [
+      { "path": "src/re_unicode.rs", "startLine": 583, "endLine": 600, "note": "replacen's corrected no-match detection via a peekable iterator" }
+    ],
+    "expectedVerdict": "recommend-approval-with-no-blocking-findings",
+    "confirmingFix": "this commit itself; see the linked issues #393/#394 and the added regression test in tests/replace.rs"
+  },
+  "requestPath": "./request.json",
+  "policyPath": "./policy.json",
+  "runs": [
+    {
+      "label": "live run, Claude Code CLI 2.1.299, external repository input, context-window 300000",
+      "reportPath": "./report.json",
+      "dispositions": [],
+      "outcomeNote": "All three reviewers completed with zero findings. Notably, case 008 (the corpus's other non-security correctness fix) produced an unexpected, ultimately scope-rejected finding; this one did not. No general conclusion follows from n=2, but it's recorded as a data point rather than left unremarked."
+    }
+  ],
+  "notes": "Preflight initially refused BUDGET_EXCEEDED: the two included files (re_bytes.rs, re_unicode.rs) total ~79KB. Raised maxInputTokensPerReviewer to 190000 and --context-window to 300000, same pattern as case 010/012 in this same repository."
+}

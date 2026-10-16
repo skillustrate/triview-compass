@@ -1,0 +1,31 @@
+{
+  "id": "006-jinja2-urlize-redos",
+  "status": "dispositioned",
+  "addedDate": "2026-10-14",
+  "dispositionedDate": "2026-10-14",
+  "source": {
+    "repository": "external: pallets/jinja (https://github.com/pallets/jinja), cloned locally for this review",
+    "baseRevision": "eeca0fecc3318d43f61bc340ad61db641b861ade",
+    "targetRevision": "ef658dc3b6389b091d608e710a810ce8b87995b3"
+  },
+  "groundTruth": {
+    "type": "known-fix",
+    "description": "Fixes GHSA-g3rq-g295-4j3m / CVE-2020-28493: the urlize() filter's punctuation-splitting regex (_punctuation_re, with nested quantifiers) was vulnerable to catastrophic backtracking (ReDoS) on crafted input. This commit replaces the single combined regex with a rewritten urlize() that does lead/tail stripping via separate, simpler anchored regexes (one anchored to the start, one to the end, explicitly avoiding mid-string backtracking per the added code comment) and inlines several previously-module-level precompiled patterns. This is a substantial rewrite (~80 changed lines in one function), not a minimal patch, which makes it a meaningfully harder known-fix case than 001/002/005: a reviewer must judge whether a large unfamiliar rewrite is safe, not just whether a one-line change is.",
+    "evidence": [
+      { "path": "src/jinja2/utils.py", "startLine": 198, "endLine": 262, "note": "rewritten urlize() function and its new anchored regexes" }
+    ],
+    "expectedVerdict": "recommend-approval-with-no-blocking-findings",
+    "confirmingFix": "this commit itself; see GHSA-g3rq-g295-4j3m"
+  },
+  "requestPath": "./request.json",
+  "policyPath": "./policy.json",
+  "runs": [
+    {
+      "label": "live run, Claude Code CLI 2.1.299, external repository input",
+      "reportPath": "./report.json",
+      "dispositions": [],
+      "outcomeNote": "All three reviewers completed with zero findings (status: complete, verdict: recommend-approval), correctly not flagging the new regexes as risky despite the function being substantially rewritten. Matches the known-fix ground truth."
+    }
+  ],
+  "notes": "Preflight initially refused with BUDGET_EXCEEDED at the default policy template's maxInputTokensPerReviewer (100000): the combined prompt (utils.py, ~22KB, plus the loaded skill guidance text) came to ~101-103k tokens per role, just over the cap - not a product bug, just this file+skill combination needing more headroom than the default. Raised maxInputTokensPerReviewer to 120000 for this case only; documented here rather than silently matching the other cases' policy value, since a reader comparing policies across cases should know why this one differs."
+}

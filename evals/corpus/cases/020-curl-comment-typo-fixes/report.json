@@ -1,0 +1,193 @@
+{
+  "contractVersion": "1.0",
+  "reviewId": "review-fd33dd0163dc93df1805",
+  "snapshotSha256": "fd33dd0163dc93df18053d6fa0c1ee8c2673bcff8c805fb5d8931f78c94f3016",
+  "mode": "full",
+  "status": "complete",
+  "verdict": "recommend-approval",
+  "reviewers": [
+    {
+      "role": "code-quality",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-b0f804e4-b7a3-482c-9da2-41c92b3e4611",
+      "contextId": "52bd30bf-e53d-42fd-8777-bdb8c2240ec0"
+    },
+    {
+      "role": "security",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-38b9e6c3-65ef-45f8-a442-e4370a51b1ff",
+      "contextId": "f4929953-8d2d-47d8-8f5a-8aa3eb15384a"
+    },
+    {
+      "role": "performance",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-6e3052ba-b948-46e0-be9c-41997d68bf54",
+      "contextId": "d06ce967-aacb-4c16-84e8-5d18940ce513"
+    }
+  ],
+  "findings": [],
+  "unverifiableFindings": [],
+  "coverage": {
+    "includedPaths": [
+      "lib/cfilters.h",
+      "lib/http.c",
+      "lib/rtsp.c",
+      "lib/socks.c",
+      "src/tool_operate.h"
+    ],
+    "excludedPaths": [],
+    "skippedChecks": [
+      "Sandbox verification was not requested."
+    ]
+  },
+  "limitations": [
+    "code-quality: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "code-quality: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "code-quality: Context capacity and protocol reserve are caller-configured assumptions.",
+    "model usage reporting is unavailable",
+    "security: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "security: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "security: Context capacity and protocol reserve are caller-configured assumptions.",
+    "performance: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "performance: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "performance: Context capacity and protocol reserve are caller-configured assumptions."
+  ],
+  "preflight": {
+    "contractVersion": "1.0",
+    "kind": "preflight",
+    "status": "ready",
+    "reviewId": "review-fd33dd0163dc93df1805",
+    "snapshotSha256": "fd33dd0163dc93df18053d6fa0c1ee8c2673bcff8c805fb5d8931f78c94f3016",
+    "policyVersion": "e261eb17099f69d77ebc2ba37645cec03f563b56d4a65f2359dceee223ee392f",
+    "mode": "full",
+    "promptVersions": [
+      {
+        "role": "code-quality",
+        "version": "27bce1d1c541c20c1d428ac3a4bd26b0431030779fb71aa43fa5e08a6f32106a"
+      },
+      {
+        "role": "security",
+        "version": "b0a7cbe7d719df231500d09537618cd4b0ca1bfd3ef6ee4601ee4c70ecb4ad14"
+      },
+      {
+        "role": "performance",
+        "version": "420a63cca0f8281775e8c0d000ed60a2048656da3f6eefe49bf3a80ca8e154a2"
+      }
+    ],
+    "scopeCounts": {
+      "included": 5,
+      "excluded": 0,
+      "binary": 0,
+      "generated": 0,
+      "oversized": 0
+    },
+    "budgets": {
+      "maxFiles": 50,
+      "maxChangedLines": 6000,
+      "maxLinesPerFile": 2000,
+      "maxBytesPerFile": 1048576,
+      "maxInputTokensPerReviewer": 420000,
+      "maxOutputTokensPerReviewer": 2000,
+      "maxModelCalls": 3,
+      "timeoutSeconds": 120
+    },
+    "harness": {
+      "adapterId": "static-review-harness",
+      "adapterVersion": "1.0",
+      "controls": {
+        "readOnlyInput": "enforced",
+        "noAgentWrite": "enforced",
+        "noAgentExecution": "enforced",
+        "noAgentNetwork": "enforced",
+        "freshContextPerReviewer": "enforced",
+        "crossSessionMemoryDisabled": "enforced"
+      }
+    },
+    "reviewers": [
+      {
+        "role": "code-quality",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 400684,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      },
+      {
+        "role": "security",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 401866,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      },
+      {
+        "role": "performance",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 401329,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      }
+    ],
+    "hostedSourceDisclosure": true,
+    "limitations": [
+      "code-quality: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "code-quality: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "code-quality: Context capacity and protocol reserve are caller-configured assumptions.",
+      "model usage reporting is unavailable",
+      "security: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "security: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "security: Context capacity and protocol reserve are caller-configured assumptions.",
+      "performance: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "performance: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "performance: Context capacity and protocol reserve are caller-configured assumptions."
+    ],
+    "sandbox": {
+      "status": "not-requested"
+    },
+    "audit": {
+      "enabled": false,
+      "metadataOnly": true,
+      "retentionDays": 0
+    }
+  },
+  "sandbox": {
+    "status": "not-requested"
+  }
+}

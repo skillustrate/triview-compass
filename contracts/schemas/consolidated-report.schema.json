@@ -1,0 +1,326 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Consolidated Review Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "reviewId", "snapshotSha256", "mode", "status", "verdict", "reviewers", "findings", "unverifiableFindings", "coverage", "limitations"],
+  "properties": {
+    "contractVersion": { "const": "1.0" },
+    "reviewId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+    "snapshotSha256": { "$ref": "common.schema.json#/$defs/sha256" },
+    "mode": { "$ref": "common.schema.json#/$defs/reviewMode" },
+    "status": { "type": "string", "enum": ["complete", "partial", "incomplete"] },
+    "verdict": { "type": "string", "enum": ["recommend-approval", "request-changes", "incomplete"] },
+    "reviewers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "status"],
+        "properties": {
+          "role": { "$ref": "common.schema.json#/$defs/reviewer" },
+          "status": { "type": "string", "enum": ["completed", "failed", "omitted"] },
+          "adapter": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["adapterId", "providerId", "modelId"],
+            "properties": {
+              "adapterId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+              "providerId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+              "modelId": { "$ref": "common.schema.json#/$defs/safeIdentifier" }
+            }
+          },
+          "invocationId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+          "contextId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+          "reason": { "type": "string", "maxLength": 1024 }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "status": { "const": "completed" } }, "required": ["status"] },
+            "then": { "required": ["adapter", "invocationId", "contextId"], "not": { "required": ["reason"] } }
+          },
+          {
+            "if": { "properties": { "status": { "enum": ["failed", "omitted"] } }, "required": ["status"] },
+            "then": { "required": ["reason"] }
+          },
+          {
+            "if": { "properties": { "status": { "const": "omitted" } }, "required": ["status"] },
+            "then": { "not": { "anyOf": [{ "required": ["invocationId"] }, { "required": ["contextId"] }] } }
+          }
+        ]
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "category", "severity", "title", "impact", "evidence", "sourceFindings", "disagreement"],
+        "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+          "category": { "type": "string", "enum": ["correctness", "security", "performance", "maintainability", "architecture", "testing", "privacy", "supply-chain", "reliability", "other"] },
+          "severity": { "$ref": "common.schema.json#/$defs/severity" },
+          "title": { "type": "string", "minLength": 1, "maxLength": 256 },
+          "impact": { "type": "string", "minLength": 1, "maxLength": 4096 },
+          "evidence": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path"],
+            "properties": {
+              "path": { "$ref": "common.schema.json#/$defs/relativePath" },
+              "startLine": { "type": "integer", "minimum": 1 },
+              "endLine": { "type": "integer", "minimum": 1 },
+              "diffHunk": { "type": "string", "minLength": 1, "maxLength": 2048 }
+            },
+            "dependentRequired": { "startLine": ["endLine"], "endLine": ["startLine"] },
+            "oneOf": [
+              { "required": ["startLine", "endLine"] },
+              { "required": ["diffHunk"] }
+            ]
+          },
+          "recommendation": { "type": "string", "maxLength": 4096 },
+          "sourceFindings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["reviewer", "findingId", "severity", "confidence"],
+              "properties": {
+                "reviewer": { "$ref": "common.schema.json#/$defs/reviewer" },
+                "findingId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+                "severity": { "$ref": "common.schema.json#/$defs/severity" },
+                "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+              }
+            },
+            "minItems": 1
+          },
+          "disagreement": { "type": "boolean" }
+        }
+      }
+    },
+    "unverifiableFindings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["reviewer", "findingId", "title", "severity", "reason"],
+        "properties": {
+          "reviewer": { "$ref": "common.schema.json#/$defs/reviewer" },
+          "findingId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+          "title": { "type": "string", "minLength": 1, "maxLength": 256 },
+          "severity": { "$ref": "common.schema.json#/$defs/severity" },
+          "reason": { "type": "string", "enum": ["unknown-file-id", "invalid-line-range", "unverified-hunk", "invalid-skill", "duplicate-finding-id"] }
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["includedPaths", "excludedPaths", "skippedChecks"],
+      "properties": {
+        "includedPaths": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/relativePath" }, "uniqueItems": true },
+        "excludedPaths": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/relativePath" }, "uniqueItems": true },
+        "skippedChecks": { "type": "array", "items": { "type": "string", "maxLength": 1024 } }
+      }
+    },
+    "limitations": { "type": "array", "items": { "type": "string", "maxLength": 1024 } },
+    "preflight": { "$ref": "preflight-report.schema.json" },
+    "sandbox": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "not-requested",
+            "completed",
+            "skipped",
+            "failed"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "guidance": {
+          "const": "https://podman.io/docs/installation"
+        },
+        "profile": {
+          "const": "linux-rootless-podman-v1"
+        },
+        "imageSha256": {
+          "$ref": "common.schema.json#/$defs/sha256"
+        },
+        "snapshotScope": {
+          "const": "included-sanitized-files"
+        },
+        "exitCode": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "stdout": {
+          "type": "string",
+          "maxLength": 131072
+        },
+        "stderr": {
+          "type": "string",
+          "maxLength": 131072
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "completed"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "profile",
+              "imageSha256",
+              "snapshotScope",
+              "exitCode",
+              "stdout",
+              "stderr"
+            ],
+            "properties": {
+              "exitCode": {
+                "const": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "skipped",
+                  "failed"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "reason"
+            ]
+          }
+        }
+      ]
+    },
+    "tokenUsage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inputTokens", "outputTokens"],
+      "properties": {
+        "inputTokens": { "type": "integer", "minimum": 0 },
+        "outputTokens": { "type": "integer", "minimum": 0 },
+        "estimatedCost": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["amount", "currency"],
+          "properties": {
+            "amount": { "type": "number", "minimum": 0 },
+            "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "required": ["sandbox"], "properties": { "sandbox": { "properties": { "status": { "enum": ["skipped", "failed"] } }, "required": ["status"] } } },
+      "then": { "properties": { "status": { "const": "incomplete" }, "verdict": { "const": "incomplete" } } }
+    },
+    {
+      "if": { "properties": { "mode": { "const": "full" } }, "required": ["mode"] },
+      "then": {
+        "properties": {
+          "reviewers": {
+            "minItems": 3,
+            "maxItems": 3,
+            "contains": { "properties": { "role": { "const": "code-quality" } }, "required": ["role"] },
+            "allOf": [
+              { "contains": { "properties": { "role": { "const": "security" } }, "required": ["role"] } },
+              { "contains": { "properties": { "role": { "const": "performance" } }, "required": ["role"] } }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "complete" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "verdict": { "enum": ["recommend-approval", "request-changes"] },
+          "mode": { "const": "full" },
+          "reviewers": { "items": { "properties": { "status": { "const": "completed" } } } }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "mode": { "const": "partial" } }, "required": ["mode"] },
+      "then": { "properties": { "status": { "enum": ["partial", "incomplete"] } } }
+    },
+    {
+      "if": { "properties": { "status": { "const": "partial" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "mode": { "const": "partial" },
+          "verdict": { "enum": ["recommend-approval", "request-changes"] },
+          "reviewers": {
+            "maxItems": 3,
+            "contains": { "properties": { "status": { "const": "omitted" } }, "required": ["status"] },
+            "items": { "properties": { "status": { "enum": ["completed", "omitted"] } } }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "incomplete" } }, "required": ["status"] },
+      "then": {
+        "properties": { "verdict": { "const": "incomplete" } },
+        "anyOf": [
+          { "properties": { "reviewers": { "contains": { "properties": { "status": { "enum": ["failed", "omitted"] } }, "required": ["status"] } } } },
+          { "required": ["sandbox"], "properties": { "sandbox": { "properties": { "status": { "enum": ["failed", "skipped"] } }, "required": ["status"] } } }
+        ]
+      }
+    },
+    {
+      "if": { "properties": { "verdict": { "const": "recommend-approval" } }, "required": ["verdict"] },
+      "then": {
+        "properties": {
+          "findings": {
+            "not": {
+              "contains": { "properties": { "severity": { "enum": ["Critical", "Required"] } }, "required": ["severity"] }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "verdict": { "const": "request-changes" } }, "required": ["verdict"] },
+      "then": {
+        "properties": {
+          "findings": {
+            "contains": { "properties": { "severity": { "enum": ["Critical", "Required"] } }, "required": ["severity"] }
+          }
+        }
+      }
+    }
+  ]
+}

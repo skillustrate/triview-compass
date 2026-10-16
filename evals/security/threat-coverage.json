@@ -1,0 +1,205 @@
+{
+  "version": "1.0",
+  "threats": [
+    {
+      "id": "injected-instructions",
+      "threat": "Instructions embedded in reviewed content",
+      "tests": [
+        {
+          "file": "tests/review-dispatch.test.js",
+          "name": "starts isolated roles with exact prepared payloads and retains severity disagreement"
+        },
+        {
+          "file": "tests/claude-code.test.js",
+          "name": "Claude Code adapter starts three independent tool-free sessions with only sanitized prompts"
+        }
+      ],
+      "behaviorCases": [
+        "injection-comment",
+        "injection-documentation",
+        "injection-test-output",
+        "injection-commit-message"
+      ],
+      "residualRisk": "Model judgment can still be influenced. Fixtures test observed behavior; no model immunity guarantee."
+    },
+    {
+      "id": "secret-disclosure",
+      "threat": "Sensitive path or credential disclosure",
+      "tests": [
+        {
+          "file": "tests/preflight.test.js",
+          "name": "redacts a known credential before the bundle can leave preflight"
+        },
+        {
+          "file": "tests/preflight.test.js",
+          "name": "excludes sensitive paths without including their contents"
+        },
+        {
+          "file": "tests/static-review.test.js",
+          "name": "known secret patterns in capability metadata never reach visible preflight"
+        },
+        {
+          "file": "tests/git-preflight.test.js",
+          "name": "Git prompts expose numeric changed-line context without old source or excluded data"
+        }
+      ],
+      "behaviorCases": [],
+      "residualRisk": "Unknown secret formats and contextual personal data may be missed; content hashes may permit guessing small inputs."
+    },
+    {
+      "id": "budgets",
+      "threat": "Unbounded or incomplete review",
+      "tests": [
+        {
+          "file": "tests/preflight.test.js",
+          "name": "rejects file and changed-line budget overflow without truncation"
+        },
+        {
+          "file": "tests/static-review.test.js",
+          "name": "stalled adapter preflight is bounded and aborts before reviewer invocation"
+        },
+        {
+          "file": "tests/review-dispatch.test.js",
+          "name": "an asynchronous reviewer timeout makes the review incomplete"
+        },
+        {
+          "file": "tests/claude-code.test.js",
+          "name": "preflight expiry kills an actual stalled auth child even when it ignores SIGTERM"
+        }
+      ],
+      "behaviorCases": [],
+      "residualRisk": "Configured Claude context and fixed wrapper reserve are assumptions; orchestrated invocation count is not an internal provider-request count."
+    },
+    {
+      "id": "host-execution",
+      "threat": "Reviewed code executed on host",
+      "tests": [
+        {
+          "file": "tests/podman-runner.test.js",
+          "name": "runs only the sanitized captured snapshot with bounded Podman controls"
+        },
+        {
+          "file": "tests/podman-runner.test.js",
+          "name": "startup, timeout, oversized output, and nonzero exit fail without host fallback"
+        }
+      ],
+      "behaviorCases": [],
+      "residualRisk": "Rootless containers share the kernel; trusted engine/hooks/image configuration and patching remain required."
+    },
+    {
+      "id": "network-exfiltration",
+      "threat": "Unexpected network or provider fallback",
+      "tests": [
+        {
+          "file": "tests/adapter-handshake.test.js",
+          "name": "runtime hosted fallback refuses a local-only policy before prompt preparation"
+        },
+        {
+          "file": "tests/git-preflight.test.js",
+          "name": "missing partial-clone objects refuse without invoking a lazy-fetch transport"
+        },
+        {
+          "file": "tests/lm-studio.test.js",
+          "name": "local-only LM Studio adapter rejects public endpoints before any request"
+        }
+      ],
+      "behaviorCases": [],
+      "residualRisk": "A private or loopback server may itself proxy or retain data; processing locality depends on the trusted host."
+    },
+    {
+      "id": "writes",
+      "threat": "Unauthorized modification",
+      "tests": [
+        {
+          "file": "tests/claude-code.test.js",
+          "name": "Claude Code adapter starts three independent tool-free sessions with only sanitized prompts"
+        },
+        {
+          "file": "tests/static-review-harness.test.js",
+          "name": "static review harness binds a deeply frozen snapshot and policy"
+        }
+      ],
+      "behaviorCases": [],
+      "residualRisk": "Trusted CLI binaries and compatible managed host policy are enforcement boundaries. The audit/evaluation output path is chosen by the caller."
+    },
+    {
+      "id": "isolation",
+      "threat": "Reviewer context contamination",
+      "tests": [
+        {
+          "file": "tests/review-dispatch.test.js",
+          "name": "shared provider context fails affected reviewers"
+        },
+        {
+          "file": "tests/model-routing.test.js",
+          "name": "one review routes roles to two accounts and a local model with attribution"
+        }
+      ],
+      "behaviorCases": [],
+      "residualRisk": "Provider backend isolation is not independently observable. Persistent agent memory is disabled; multi-turn poisoning is outside v1."
+    },
+    {
+      "id": "model-output",
+      "threat": "Malformed or misleading model output",
+      "tests": [
+        {
+          "file": "tests/review-dispatch.test.js",
+          "name": "unknown file IDs remain visible as unverifiable and prevent a complete verdict"
+        },
+        {
+          "file": "tests/review-dispatch.test.js",
+          "name": "invalid line anchors do not erase other verified findings"
+        },
+        {
+          "file": "tests/behavior-score.test.js",
+          "name": "behavior scorer requires anchored expected findings and correct full-review attribution"
+        },
+        {
+          "file": "tests/behavior-score.test.js",
+          "name": "semantic anchor oracle rejects wrong existing lines and ranges that merely span the defect"
+        }
+      ],
+      "behaviorCases": [
+        "assignment-in-condition",
+        "sql-concatenation",
+        "repeated-sort",
+        "clean-arithmetic",
+        "numbered-changed-anchor",
+        "pre-existing-defect"
+      ],
+      "residualRisk": "Schema-valid anchored claims may still be wrong. Keyword-oracle passes are advisory."
+    },
+    {
+      "id": "audit-retention",
+      "threat": "Source or secret retained in audit",
+      "tests": [
+        {
+          "file": "tests/audit-store.test.js",
+          "name": "audit storage writes private metadata and prunes only expired valid audit records"
+        },
+        {
+          "file": "tests/model-routing.test.js",
+          "name": "routed audit records model identities without source or account paths"
+        }
+      ],
+      "behaviorCases": [],
+      "residualRisk": "Trusted private storage paths and OS ownership are required. Hosted provider retention follows its approved terms."
+    },
+    {
+      "id": "missing-runtime",
+      "threat": "Unavailable runtime silently bypassed",
+      "tests": [
+        {
+          "file": "tests/static-review.test.js",
+          "name": "missing Podman supplies guidance and records an incomplete metadata-only audit"
+        },
+        {
+          "file": "tests/claude-code.test.js",
+          "name": "unverified Claude CLI versions refuse before a reviewer prompt is sent"
+        }
+      ],
+      "behaviorCases": [],
+      "residualRisk": "No automatic installation, image pull, alternate provider, or host execution fallback exists."
+    }
+  ]
+}

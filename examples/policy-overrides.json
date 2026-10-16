@@ -1,0 +1,9 @@
+{
+  "contractVersion": "1.0",
+  "budgets": {
+    "maxInputTokensPerReviewer": 200000
+  },
+  "pathPolicy": {
+    "excludedPathGlobs": ["**/generated/**", "**/*.pb.go"]
+  }
+}

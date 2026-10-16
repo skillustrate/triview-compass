@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Repo-Level Policy Overrides",
+  "description": "A small, partial file layered onto a complete review policy at review time (--policy-overrides), for adopters who want to adjust a few fields without maintaining a duplicate full policy. Every field here is optional; applying zero of them is a no-op. The result of applying these overrides is still validated against the full Review Policy schema before use -- this file can never produce an otherwise-invalid policy.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion"],
+  "properties": {
+    "contractVersion": { "const": "1.0" },
+    "reviewers": {
+      "description": "Replaces policy.reviewers entirely. policy.mode is recomputed from this (full if all three are present, partial otherwise) rather than taken from the override, so the two can never disagree.",
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/reviewer" },
+      "uniqueItems": true,
+      "minItems": 1,
+      "maxItems": 3
+    },
+    "budgets": {
+      "description": "Merged key by key onto policy.budgets; only the keys present here change.",
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "maxFiles": { "type": "integer", "minimum": 1 },
+        "maxChangedLines": { "type": "integer", "minimum": 1 },
+        "maxLinesPerFile": { "type": "integer", "minimum": 1 },
+        "maxBytesPerFile": { "type": "integer", "minimum": 1, "maximum": 8388608 },
+        "maxInputTokensPerReviewer": { "type": "integer", "minimum": 1 },
+        "maxOutputTokensPerReviewer": { "type": "integer", "minimum": 1 },
+        "maxModelCalls": { "type": "integer", "minimum": 1 },
+        "timeoutSeconds": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "pathPolicy": {
+      "description": "excludedPathGlobs REPLACES policy.pathPolicy.excludedPathGlobs (it does not append to it) -- the merged list is this list, exactly, so an adopter can always see the complete exclusion set in one place.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["excludedPathGlobs"],
+      "properties": {
+        "excludedPathGlobs": { "type": "array",
+          "items": { "type": "string", "minLength": 1, "maxLength": 256 }, "uniqueItems": true }
+      }
+    },
+    "sandbox": {
+      "description": "REPLACES policy.sandbox entirely -- its fields are interdependent (see review-policy.schema.json), so a partial sandbox override could silently produce a combination the full schema would reject if merged key by key. Provide the complete object or omit this override.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["executionRequested", "backend", "network"],
+      "properties": {
+        "executionRequested": { "type": "boolean" },
+        "backend": { "type": "string", "enum": ["podman", "none"] },
+        "network": { "const": "disabled" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "executionRequested": { "const": false } }, "required": ["executionRequested"] },
+          "then": { "properties": { "backend": { "const": "none" } } }
+        },
+        {
+          "if": { "properties": { "executionRequested": { "const": true } }, "required": ["executionRequested"] },
+          "then": { "properties": { "backend": { "const": "podman" } } }
+        }
+      ]
+    }
+  }
+}

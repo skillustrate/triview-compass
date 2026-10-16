@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "gitCommitId": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//)(?!.*\\\\)(?!.*/$)[^\\u0000]+$"
+    },
+    "reviewer": {
+      "type": "string",
+      "enum": ["code-quality", "security", "performance"]
+    },
+    "reviewMode": {
+      "type": "string",
+      "enum": ["full", "partial"]
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["Critical", "Required", "Optional", "Nit"]
+    },
+    "skill": {
+      "type": "string",
+      "enum": ["core-review", "security-review", "performance-review", "adversarial-input-review"]
+    },
+    "controlState": {
+      "type": "string",
+      "enum": ["enforced", "unsupported", "configurable"]
+    },
+    "safeIdentifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@+-]*$"
+    }
+  }
+}

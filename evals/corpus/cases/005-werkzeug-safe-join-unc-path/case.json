@@ -1,0 +1,31 @@
+{
+  "id": "005-werkzeug-safe-join-unc-path",
+  "status": "dispositioned",
+  "addedDate": "2026-10-14",
+  "dispositionedDate": "2026-10-14",
+  "source": {
+    "repository": "external: pallets/werkzeug (https://github.com/pallets/werkzeug), cloned locally for this review",
+    "baseRevision": "50cfeebcb0727e18cc52ffbeb125f4a66551179b",
+    "targetRevision": "87cc78a25f782f8c59fbde786840a00cf0d09b3d"
+  },
+  "groundTruth": {
+    "type": "known-fix",
+    "description": "Fixes GHSA-f9vj-2wh5-fj8j / CVE-2024-49766: on Python < 3.11 on Windows, os.path.isabs() does not catch UNC paths like //server/share, so Werkzeug's safe_join() could produce a path that is not actually safe. The fix adds an explicit `filename.startswith(\"/\")` check alongside the existing os.path.isabs() check. A single-line, well-targeted fix with its own updated test coverage (tests/test_security.py).",
+    "evidence": [
+      { "path": "src/werkzeug/security.py", "startLine": 151, "endLine": 156, "note": "safe_join()'s absolute-path rejection checks" }
+    ],
+    "expectedVerdict": "recommend-approval-with-no-blocking-findings",
+    "confirmingFix": "this commit itself; see https://github.com/pallets/werkzeug/security/advisories/GHSA-f9vj-2wh5-fj8j"
+  },
+  "requestPath": "./request.json",
+  "policyPath": "./policy.json",
+  "runs": [
+    {
+      "label": "live run, Claude Code CLI 2.1.299, external repository input",
+      "reportPath": "./report.json",
+      "dispositions": [],
+      "outcomeNote": "All three reviewers completed with zero findings (status: complete, verdict: recommend-approval). Matches the known-fix ground truth: a single, well-targeted security fix with its own test coverage should not trigger a blocking finding."
+    }
+  ],
+  "notes": "First corpus case from a different ecosystem (Python/PyPI) than cases 001-004 (all JS or this project's own history). Found via the OSV API (package=werkzeug, ecosystem=PyPI). The advisory's referenced commit was a merge commit with an empty diff against its first parent; used the actual fork-branch tip commit (87cc78a2) as the target instead, since that's where the real change lives. Policy scoped to security.py + test_security.py via scope-policy.js."
+}

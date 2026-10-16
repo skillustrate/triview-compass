@@ -1,0 +1,28 @@
+{
+  "id": "007-minimist-readme-routine",
+  "status": "dispositioned",
+  "addedDate": "2026-10-14",
+  "dispositionedDate": "2026-10-14",
+  "source": {
+    "repository": "external: minimistjs/minimist (https://github.com/minimistjs/minimist), cloned locally for this review",
+    "baseRevision": "cfb8d4b320a199d829f54569387f2abc52193ece",
+    "targetRevision": "dc6969469d5a9713fefa6fc3b4c41c8d78f61b13"
+  },
+  "groundTruth": {
+    "type": "known-clean",
+    "description": "A purely documentation change (commit 'add description of --no', closing issue #38): adds a README section describing --no-* flag behavior and removes an outdated security warning paragraph. No code file is touched at all (diff --name-status shows only README.md). This is deliberately the corpus's first 'boring, routine, nothing-to-find' real-world case - distinct from cases 001/002/005/006, which are known-fix cases where a real defect WAS present before the reviewed commit. Here there is no defect before or after; the change itself carries no risk by construction. This tests whether the tool stays quiet on unremarkable input, not whether it correctly recognizes a fix.",
+    "evidence": [],
+    "expectedVerdict": "recommend-approval-with-zero-findings"
+  },
+  "requestPath": "./request.json",
+  "policyPath": "./policy.json",
+  "runs": [
+    {
+      "label": "live run, Claude Code CLI 2.1.299, external repository input",
+      "reportPath": "./report.json",
+      "dispositions": [],
+      "outcomeNote": "All three reviewers completed with zero findings on a single included file (README.md), as expected for a docs-only change with no code to review. This is the cleanest possible confirmation of false-positive resistance in the corpus so far: there was nothing there to find, and nothing was reported."
+    }
+  ],
+  "notes": "Deliberately chosen as a 'boring' control case per evals/corpus/README.md's growing-the-corpus guidance: all other cases in the corpus are built around a known security/correctness story, which risks the corpus only ever testing 'can it find interesting things' and never 'does it stay quiet on uninteresting things'. A commit that removed a stale README security warning was chosen partly for irony value, but mainly because it is unambiguously code-free."
+}

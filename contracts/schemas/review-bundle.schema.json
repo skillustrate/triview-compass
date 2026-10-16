@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Sanitized Review Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "reviewId", "snapshot", "mode", "reviewers", "files"],
+  "properties": {
+    "contractVersion": { "const": "1.0" },
+    "reviewId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "capturedAt", "inputKind"],
+      "properties": {
+        "sha256": { "$ref": "common.schema.json#/$defs/sha256" },
+        "capturedAt": { "type": "string", "format": "date-time" },
+        "inputKind": { "type": "string", "enum": ["git", "files"] },
+        "baseRevision": { "$ref": "common.schema.json#/$defs/gitCommitId" },
+        "targetRevision": { "$ref": "common.schema.json#/$defs/gitCommitId" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "inputKind": { "const": "git" } }, "required": ["inputKind"] },
+          "then": { "required": ["baseRevision", "targetRevision"] },
+          "else": { "not": { "anyOf": [{ "required": ["baseRevision"] }, { "required": ["targetRevision"] }] } }
+        }
+      ]
+    },
+    "mode": { "$ref": "common.schema.json#/$defs/reviewMode" },
+    "reviewers": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/reviewer" },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "state", "changeType"],
+        "properties": {
+          "path": { "$ref": "common.schema.json#/$defs/relativePath" },
+          "previousPath": { "$ref": "common.schema.json#/$defs/relativePath" },
+          "state": { "type": "string", "enum": ["included", "excluded", "binary", "generated", "oversized"] },
+          "changeType": { "type": "string", "enum": ["added", "modified", "deleted", "renamed", "context"] },
+          "mediaType": { "type": "string", "maxLength": 128 },
+          "content": { "type": "string" },
+          "contentSha256": { "$ref": "common.schema.json#/$defs/sha256" },
+          "changeContext": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "basis",
+              "hunks"
+            ],
+            "properties": {
+              "status": {
+                "enum": [
+                  "available",
+                  "unavailable"
+                ]
+              },
+              "basis": {
+                "enum": [
+                  "base",
+                  "target"
+                ]
+              },
+              "hunks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "baseStart",
+                    "baseCount",
+                    "targetStart",
+                    "targetCount"
+                  ],
+                  "properties": {
+                    "baseStart": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "baseCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "targetStart": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "targetCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "redactions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["kind", "count"],
+              "properties": {
+                "kind": { "type": "string", "enum": ["credential", "private-key", "token", "personal-data", "other"] },
+                "count": { "type": "integer", "minimum": 1 }
+              }
+            }
+          },
+          "exclusionReason": { "type": "string", "maxLength": 512 }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "changeType": { "const": "renamed" } }, "required": ["changeType"] },
+            "then": { "required": ["previousPath"] }
+          },
+          {
+            "if": { "properties": { "state": { "const": "included" } }, "required": ["state"] },
+            "then": { "required": ["content", "contentSha256"] },
+            "else": {
+              "required": ["exclusionReason"],
+              "properties": { "content": false, "contentSha256": false, "changeContext": false }
+            }
+          }
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "mode": { "const": "full" } }, "required": ["mode"] },
+      "then": {
+        "properties": {
+          "reviewers": {
+            "minItems": 3,
+            "maxItems": 3,
+            "contains": { "const": "code-quality" },
+            "allOf": [
+              { "contains": { "const": "security" } },
+              { "contains": { "const": "performance" } }
+            ]
+          }
+        }
+      },
+      "else": { "properties": { "reviewers": { "maxItems": 2 } } }
+    }
+  ]
+}

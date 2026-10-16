@@ -1,0 +1,234 @@
+{
+  "contractVersion": "1.0",
+  "reviewId": "review-550e3198e292badaefa8",
+  "snapshotSha256": "550e3198e292badaefa8162c08e8b055671f55fa64497b7fa374baf437aafe97",
+  "mode": "full",
+  "status": "complete",
+  "verdict": "request-changes",
+  "reviewers": [
+    {
+      "role": "code-quality",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-6c838b7d-bdf3-42ba-9316-f854e0aa5c85",
+      "contextId": "29929ada-6607-4fab-b21f-65ff9c8706b0"
+    },
+    {
+      "role": "security",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-24f78d16-faf3-4b2f-933f-275263a6e088",
+      "contextId": "52d9e76c-4e26-4da0-a520-5c8c30b34422"
+    },
+    {
+      "role": "performance",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-3f974b90-1489-4167-a7b1-bf549c041799",
+      "contextId": "388755ca-198a-4c42-a874-24d8df20dce1"
+    }
+  ],
+  "findings": [
+    {
+      "id": "finding-1",
+      "category": "correctness",
+      "severity": "Required",
+      "title": "Trailing-wildcard rule drops the character before '*'",
+      "impact": "For an origin ending in '*', such as \"https://api.*\", the rule prefix becomes o[:i-1], which is \"https://api\" and not \"https://api.\". The documented pattern \"https://api.*\" then matches unintended origins such as \"https://apievil.com\". That makes the allowlist wider than configured, which is a CORS security weakness. A rule like \"http://x*\" would also lose the 'x'.",
+      "evidence": {
+        "path": "cors.go",
+        "startLine": 134,
+        "endLine": 135
+      },
+      "recommendation": "Use the full prefix before the wildcard: `[]string{o[:i], \"*\"}`. Add tests for trailing-wildcard origins that cover both a matching origin and a near-miss origin.",
+      "sourceFindings": [
+        {
+          "reviewer": "code-quality",
+          "findingId": "f1",
+          "severity": "Required",
+          "confidence": 0.7
+        }
+      ],
+      "disagreement": false
+    },
+    {
+      "id": "finding-2",
+      "category": "security",
+      "severity": "Required",
+      "title": "Trailing-wildcard origin rule drops the character before '*', widening allowed origins",
+      "impact": "For an origin like \"https://api.*\", the rule is stored as prefix \"https://api\" and \"*\". The \".\" is dropped, so any origin that starts with \"https://api\" can match, such as \"https://apiattacker.com\". With AllowCredentials this could let an attacker-controlled origin read credentialed responses. This depends on how the matcher uses the rule, and that code isn't in the bundle. The changed hunk is only line 134, so I can't confirm the defect comes from this change.",
+      "evidence": {
+        "path": "cors.go",
+        "startLine": 134,
+        "endLine": 135
+      },
+      "recommendation": "Use o[:i] to keep the full prefix, including the character before '*'. Add tests showing that \"https://api.*\" rejects \"https://apiattacker.com\".",
+      "sourceFindings": [
+        {
+          "reviewer": "security",
+          "findingId": "f1",
+          "severity": "Required",
+          "confidence": 0.4
+        }
+      ],
+      "disagreement": false
+    }
+  ],
+  "unverifiableFindings": [],
+  "coverage": {
+    "includedPaths": [
+      "cors.go"
+    ],
+    "excludedPaths": [],
+    "skippedChecks": [
+      "Sandbox verification was not requested."
+    ]
+  },
+  "limitations": [
+    "code-quality: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "code-quality: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "code-quality: Context capacity and protocol reserve are caller-configured assumptions.",
+    "model usage reporting is unavailable",
+    "security: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "security: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "security: Context capacity and protocol reserve are caller-configured assumptions.",
+    "performance: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "performance: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "performance: Context capacity and protocol reserve are caller-configured assumptions."
+  ],
+  "preflight": {
+    "contractVersion": "1.0",
+    "kind": "preflight",
+    "status": "ready",
+    "reviewId": "review-550e3198e292badaefa8",
+    "snapshotSha256": "550e3198e292badaefa8162c08e8b055671f55fa64497b7fa374baf437aafe97",
+    "policyVersion": "c2d22a0119bc2b7be750b2cd14c9d5351f89d172994c0eac7622c0ea1518779e",
+    "mode": "full",
+    "promptVersions": [
+      {
+        "role": "code-quality",
+        "version": "27bce1d1c541c20c1d428ac3a4bd26b0431030779fb71aa43fa5e08a6f32106a"
+      },
+      {
+        "role": "security",
+        "version": "b0a7cbe7d719df231500d09537618cd4b0ca1bfd3ef6ee4601ee4c70ecb4ad14"
+      },
+      {
+        "role": "performance",
+        "version": "420a63cca0f8281775e8c0d000ed60a2048656da3f6eefe49bf3a80ca8e154a2"
+      }
+    ],
+    "scopeCounts": {
+      "included": 1,
+      "excluded": 0,
+      "binary": 0,
+      "generated": 0,
+      "oversized": 0
+    },
+    "budgets": {
+      "maxFiles": 50,
+      "maxChangedLines": 6000,
+      "maxLinesPerFile": 2000,
+      "maxBytesPerFile": 1048576,
+      "maxInputTokensPerReviewer": 100000,
+      "maxOutputTokensPerReviewer": 2000,
+      "maxModelCalls": 3,
+      "timeoutSeconds": 120
+    },
+    "harness": {
+      "adapterId": "static-review-harness",
+      "adapterVersion": "1.0",
+      "controls": {
+        "readOnlyInput": "enforced",
+        "noAgentWrite": "enforced",
+        "noAgentExecution": "enforced",
+        "noAgentNetwork": "enforced",
+        "freshContextPerReviewer": "enforced",
+        "crossSessionMemoryDisabled": "enforced"
+      }
+    },
+    "reviewers": [
+      {
+        "role": "code-quality",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 78394,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      },
+      {
+        "role": "security",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 79576,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      },
+      {
+        "role": "performance",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 79039,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      }
+    ],
+    "hostedSourceDisclosure": true,
+    "limitations": [
+      "code-quality: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "code-quality: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "code-quality: Context capacity and protocol reserve are caller-configured assumptions.",
+      "model usage reporting is unavailable",
+      "security: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "security: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "security: Context capacity and protocol reserve are caller-configured assumptions.",
+      "performance: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "performance: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "performance: Context capacity and protocol reserve are caller-configured assumptions."
+    ],
+    "sandbox": {
+      "status": "not-requested"
+    },
+    "audit": {
+      "enabled": false,
+      "metadataOnly": true,
+      "retentionDays": 0
+    }
+  },
+  "sandbox": {
+    "status": "not-requested"
+  }
+}

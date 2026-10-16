@@ -1,0 +1,82 @@
+{
+  "contractVersion": "1.0",
+  "mode": "full",
+  "reviewers": [
+    "code-quality",
+    "security",
+    "performance"
+  ],
+  "budgets": {
+    "maxFiles": 50,
+    "maxChangedLines": 6000,
+    "maxLinesPerFile": 2000,
+    "maxBytesPerFile": 1048576,
+    "maxInputTokensPerReviewer": 100000,
+    "maxOutputTokensPerReviewer": 2000,
+    "maxModelCalls": 3,
+    "timeoutSeconds": 120
+  },
+  "dataPolicy": {
+    "mode": "approved-hosted",
+    "selectedProvider": "anthropic-claude-code",
+    "allowedProviders": [
+      "anthropic-claude-code"
+    ]
+  },
+  "pathPolicy": {
+    "excludedPathGlobs": [
+      ".travis.yml",
+      "LICENSE",
+      "example/**",
+      "package.json",
+      "readme.markdown",
+      "test/all_bool.js",
+      "test/bool.js",
+      "test/dash.js",
+      "test/default_bool.js",
+      "test/dotted.js",
+      "test/kv_short.js",
+      "test/long.js",
+      "test/num.js",
+      "test/parse.js",
+      "test/parse_modified.js",
+      "test/short.js",
+      "test/stop_early.js",
+      "test/unknown.js",
+      "test/whitespace.js"
+    ],
+    "generatedPathGlobs": [
+      "**/node_modules/**",
+      "**/vendor/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/coverage/**"
+    ],
+    "symlinkHandling": "reject",
+    "binaryHandling": "report-and-skip"
+  },
+  "secretPolicy": {
+    "scannerRequired": true,
+    "sensitivePathGlobs": [
+      ".env",
+      ".env.*",
+      "**/.env",
+      "**/.env.*",
+      "**/.aws/**",
+      "**/.ssh/**",
+      "**/.config/gcloud/**",
+      "**/credentials",
+      "**/credentials.*",
+      "**/*.pem",
+      "**/*.key",
+      "**/*.p12",
+      "**/*.pfx"
+    ],
+    "onScannerFailure": "stop-review"
+  },
+  "sandbox": {
+    "executionRequested": false,
+    "backend": "none",
+    "network": "disabled"
+  }
+}

@@ -1,0 +1,18 @@
+Review: complete; verdict: recommend-approval
+Snapshot: 1e3849926e6829306ca8a1d3c0a28bbabcea334b72b4c97568214a7a5085eed4
+code-quality: completed (anthropic-claude-code/sonnet via claude-code-v1)
+security: completed (anthropic-claude-code/sonnet via claude-code-v1)
+performance: completed (anthropic-claude-code/sonnet via claude-code-v1)
+Coverage: 2 included, 0 excluded
+Sandbox: not-requested
+Skipped: Sandbox verification was not requested.
+Limitation: code-quality: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.
+Limitation: code-quality: Model identity is the configured CLI selection; exact served model identity is unverified.
+Limitation: code-quality: Context capacity and protocol reserve are caller-configured assumptions.
+Limitation: model usage reporting is unavailable
+Limitation: security: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.
+Limitation: security: Model identity is the configured CLI selection; exact served model identity is unverified.
+Limitation: security: Context capacity and protocol reserve are caller-configured assumptions.
+Limitation: performance: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.
+Limitation: performance: Model identity is the configured CLI selection; exact served model identity is unverified.
+Limitation: performance: Context capacity and protocol reserve are caller-configured assumptions.

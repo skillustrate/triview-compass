@@ -1,0 +1,44 @@
+{
+  "id": "001-git-capture-lazy-fetch",
+  "status": "dispositioned",
+  "addedDate": "2026-10-15",
+  "source": {
+    "repository": "self (triview-compass)",
+    "baseRevision": "15e9ad382e948aa69c213d125ba277f192894613",
+    "targetRevision": "da82cbe5f9cda9aeba121a51fec2e7838d767394"
+  },
+  "groundTruth": {
+    "type": "known-fix",
+    "description": "The target commit sets GIT_NO_LAZY_FETCH=1 so a partial clone with missing objects refuses capture instead of triggering an implicit network fetch during Git capture. A positive-control test proves the transport is reachable without the safeguard. This is a real, intentional security fix with a passing regression test, not a defect to be found.",
+    "evidence": [
+      { "path": "triview-compass/src/core/git-capture.js", "note": "GIT_NO_LAZY_FETCH=1 safeguard" },
+      { "path": "triview-compass/tests/git-preflight.test.js", "note": "missing-object refusal test and its positive control" }
+    ],
+    "expectedVerdict": "recommend-approval-with-no-blocking-findings"
+  },
+  "requestPath": "../../../pilots/git-capture/request.json",
+  "policyPath": "../../../pilots/git-capture/policy.json",
+  "runs": [
+    {
+      "label": "original (prompt v1)",
+      "reportPath": "../../../pilots/git-capture/report.json",
+      "dispositions": [
+        {
+          "findingId": "finding-1",
+          "reviewer": "performance",
+          "severity": "Optional",
+          "verdict": "rejected",
+          "reasonCode": "wrong-anchor",
+          "note": "Cited lines 139-150 cover hashing/function initialization, not the two separate Git subprocess calls the finding describes. Those calls are actually at lines 182 and 189. Pattern predates the reviewed change and has no latency benchmark, so even with a corrected anchor it would be a pre-existing-code observation outside this change's review scope, not a defect introduced by it."
+        }
+      ]
+    },
+    {
+      "label": "evidence-context rerun (prompt v2, numbered source + Git hunk coordinates)",
+      "reportPath": "../../../pilots/git-capture/report-evidence-context.json",
+      "dispositions": [],
+      "outcomeNote": "All three reviewers completed with distinct context IDs and zero findings, including the previously-raised wrong-anchor batching suggestion. Per review.md §5, a clean report still requires inspecting the actual changed logic rather than trusting the absence of findings; manual inspection (see README.md's manual assessment) confirms the one-line GIT_NO_LAZY_FETCH safeguard and its positive-control test have no outstanding issue. Nothing to disposition because no finding was produced, not because dispositioning was skipped."
+    }
+  ],
+  "notes": "Migrated from evals/pilots/git-capture/README.md. Prompt v2 (numbered source, explicit introduced-change scope) removed the wrong-anchor finding entirely on rerun against the identical commit range; this is one case, not proof the anchor problem is solved in general."
+}

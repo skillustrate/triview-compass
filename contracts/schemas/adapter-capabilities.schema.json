@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Adapter Capability Declaration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "adapterId", "adapterType", "adapterVersion", "controls", "limitations"],
+  "properties": {
+    "contractVersion": { "const": "1.0" },
+    "adapterId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+    "adapterType": { "type": "string", "enum": ["harness", "model", "sandbox"] },
+    "adapterVersion": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+    "providerId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+    "modelId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+    "dataHandling": { "type": "string", "enum": ["local", "hosted-configurable", "hosted"] },
+    "contextWindowTokens": { "type": "integer", "minimum": 1 },
+    "maxOutputTokens": { "type": "integer", "minimum": 1 },
+    "controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "readOnlyInput": { "$ref": "common.schema.json#/$defs/controlState" },
+        "noAgentWrite": { "$ref": "common.schema.json#/$defs/controlState" },
+        "noAgentExecution": { "$ref": "common.schema.json#/$defs/controlState" },
+        "noAgentNetwork": { "$ref": "common.schema.json#/$defs/controlState" },
+        "freshContextPerReviewer": { "$ref": "common.schema.json#/$defs/controlState" },
+        "crossSessionMemoryDisabled": { "$ref": "common.schema.json#/$defs/controlState" },
+        "structuredOutput": { "$ref": "common.schema.json#/$defs/controlState" },
+        "usageReporting": { "$ref": "common.schema.json#/$defs/controlState" },
+        "sandboxIsolation": { "$ref": "common.schema.json#/$defs/controlState" },
+        "sandboxNetworkDisabled": { "$ref": "common.schema.json#/$defs/controlState" },
+        "sandboxResourceLimits": { "$ref": "common.schema.json#/$defs/controlState" }
+      }
+    },
+    "limitations": { "type": "array", "items": { "type": "string", "maxLength": 1024 } }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "adapterType": { "const": "model" } }, "required": ["adapterType"] },
+      "then": { "required": ["providerId", "modelId", "dataHandling", "contextWindowTokens", "maxOutputTokens"] }
+    },
+    {
+      "if": { "properties": { "adapterType": { "const": "harness" } }, "required": ["adapterType"] },
+      "then": {
+        "properties": {
+          "controls": { "required": ["readOnlyInput", "noAgentWrite", "noAgentExecution", "noAgentNetwork", "freshContextPerReviewer", "crossSessionMemoryDisabled"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "adapterType": { "const": "model" } }, "required": ["adapterType"] },
+      "then": {
+        "properties": {
+          "controls": { "required": ["freshContextPerReviewer", "crossSessionMemoryDisabled", "structuredOutput", "usageReporting"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "adapterType": { "const": "sandbox" } }, "required": ["adapterType"] },
+      "then": {
+        "properties": {
+          "controls": { "required": ["sandboxIsolation", "sandboxNetworkDisabled", "sandboxResourceLimits"] }
+        }
+      }
+    }
+  ]
+}

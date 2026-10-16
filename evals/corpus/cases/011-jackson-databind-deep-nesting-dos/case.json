@@ -1,0 +1,31 @@
+{
+  "id": "011-jackson-databind-deep-nesting-dos",
+  "status": "dispositioned",
+  "addedDate": "2026-10-14",
+  "dispositionedDate": "2026-10-14",
+  "source": {
+    "repository": "external: FasterXML/jackson-databind (https://github.com/FasterXML/jackson-databind), cloned locally for this review",
+    "baseRevision": "ada34dcf6676aa5c5869791c23143a65a7bf56c2",
+    "targetRevision": "a1fa4ae4ecf5cee16da465985f135f3e81816f8c"
+  },
+  "groundTruth": {
+    "type": "known-fix",
+    "description": "Fixes CVE-2026-50193 / GHSA-3wrr-7qpf-2prh: reading deeply-nested JSON into a JsonNode via ObjectMapper.readTree() then calling JsonNode.toString() could throw StackOverflowError, because toString() recursed once per nesting level with no depth bound - a cheap, 1000s-of-levels-deep, few-KB input could exhaust the call stack. The fix rewrites the recursive toString()/writeObject() path in InternalNodeMapper.java into an explicit-stack, non-recursive traversal. First corpus case in Java/Maven, and the largest single-function rewrite reviewed so far (105 changed lines).",
+    "evidence": [
+      { "path": "src/main/java/com/fasterxml/jackson/databind/node/InternalNodeMapper.java", "startLine": 1, "endLine": 140, "note": "non-recursive rewrite of the JsonNode serialization-to-string path" }
+    ],
+    "expectedVerdict": "recommend-approval-with-no-blocking-findings",
+    "confirmingFix": "this commit itself; see GHSA-3wrr-7qpf-2prh and https://github.com/FasterXML/jackson-databind/issues/3447"
+  },
+  "requestPath": "./request.json",
+  "policyPath": "./policy.json",
+  "runs": [
+    {
+      "label": "live run, Claude Code CLI 2.1.299, external repository input, context-window 200000",
+      "reportPath": "./report.json",
+      "dispositions": [],
+      "outcomeNote": "All three reviewers completed with zero findings, correctly not flagging the rewrite's unfamiliar explicit-stack control flow as risky despite it being the largest single-file rewrite in the corpus so far. Matches the known-fix ground truth."
+    }
+  ],
+  "notes": "This case is also what surfaced a real bug in evals/scripts/scope-policy.js: jackson-databind's tree has ~19,000 tracked files, and the prior per-file-literal exclude-list generator produced a 1.7MB, 18,708-entry policy.json. Fixed the generator to collapse whole excluded subtrees into single dir/** globs (now 98 entries), and separately found that the per-file escaping it used for special glob characters was itself incompatible with src/core/preflight.js's glob compiler, which refuses any glob containing ?{}[] or a backslash with no escape mechanism - meaning an escaped literal would have been rejected anyway. Neither bug happened to trigger on any of cases 001-009's actual trees, but both are real; see STATE.md for the full fix record. All corpus cases' policies were regenerated with the fixed generator and reverified to produce identical included/excluded scope counts before this case was added."
+}

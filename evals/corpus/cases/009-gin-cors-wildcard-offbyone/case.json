@@ -1,0 +1,46 @@
+{
+  "id": "009-gin-cors-wildcard-offbyone",
+  "status": "dispositioned",
+  "addedDate": "2026-10-14",
+  "dispositionedDate": "2026-10-14",
+  "source": {
+    "repository": "external: gin-contrib/cors (https://github.com/gin-contrib/cors), cloned locally for this review",
+    "baseRevision": "957073db92aa3f3df3db5dfd8d8c5e298d4f8da6",
+    "targetRevision": "258ca28b726c80f630e584702e68b9f4d1476e1c"
+  },
+  "groundTruth": {
+    "type": "known-defect-present",
+    "description": "This is the corpus's first case from a third ecosystem (Go), and an unusually precise introducing commit: parseWildcardRules() was added in an earlier commit (45ed25a, 2018) with a dead/unreachable branch (`if i == len(o)`, which can never be true since strings.Index never returns len(o)) that happened to also contain an off-by-one bug in its body (`o[:i-1]` instead of `o[:i]`). This reviewed commit, titled 'Fix bug', changes only the condition to `i == (len(o) - 1)` - making the branch reachable for the first time - WITHOUT also fixing the pre-existing off-by-one in the body. The result: a trailing-wildcard origin rule like 'https://example.com/*' now has its prefix computed as o[:i-1] = 'https://example.com' (missing the trailing '/') instead of o[:i] = 'https://example.com/'. This widens the allowlist to match unintended origins like 'https://example.community', exactly matching CVE-2019-25211/GHSA-869c-j7wc-8jqv, not fixed until 2024 (commit 27b723a). A reviewer that only looks at the 1-line diff without understanding Go slice semantics and without noticing the branch just became reachable could easily miss this; a reviewer that traces the logic should catch it.",
+    "evidence": [
+      { "path": "cors.go", "startLine": 134, "endLine": 140, "note": "parseWildcardRules(); the newly-reachable branch with the pre-existing off-by-one slice bound" }
+    ],
+    "expectedVerdict": "request-changes-with-a-required-finding-on-the-trailing-wildcard-off-by-one",
+    "confirmingFix": "27b723a (gin-contrib/cors, 'fixe(domain): wildcard parse bug (#106)', fixes GHSA-869c-j7wc-8jqv / CVE-2019-25211)",
+    "independentVerification": "Verified by hand-tracing Go slice semantics with a concrete example (o = \"https://api.*\"-style origin) rather than executing Go code - no Go toolchain was available in this environment. Traced that o[:i-1] drops both the '*' and the character immediately before it, while the correct o[:i] drops only the '*'. This matches the published CVE description and both reviewers' independent findings exactly, which is strong convergent evidence even without direct execution; this gap (no Go execution capability) is disclosed rather than glossed over."
+  },
+  "requestPath": "./request.json",
+  "policyPath": "./policy.json",
+  "runs": [
+    {
+      "label": "live run, Claude Code CLI 2.1.299, external repository input",
+      "reportPath": "./report.json",
+      "dispositions": [
+        {
+          "findingId": "finding-1",
+          "reviewer": "code-quality",
+          "severity": "Required",
+          "verdict": "confirmed",
+          "note": "Independently derives the exact known ground-truth defect: o[:i-1] drops the character before '*', e.g. turning 'https://api.*' into prefix 'https://api' instead of 'https://api.', which then matches unintended origins like 'https://apievil.com'. Matches my own hand-traced analysis exactly. Confidence 0.7, Required severity - appropriate."
+        },
+        {
+          "findingId": "finding-2",
+          "reviewer": "security",
+          "severity": "Required",
+          "verdict": "confirmed",
+          "note": "Same core claim, independently raised by the security reviewer, with the credential-leak consequence spelled out (AllowCredentials + a matched attacker-controlled origin). Notably well-calibrated: explicitly flagged its own confidence as lower (0.4) and stated 'this depends on how the matcher uses the rule, and that code isn't in the bundle' and 'the changed hunk is only line 134, so I can't confirm the defect comes from this change' - an honest acknowledgment of the scope limitation from only having cors.go in the reviewed bundle, not the full call-site context. Confirmed: the claim is correct and the hedging is appropriate given what was actually in scope, not a sign the finding should be discounted."
+        }
+      ]
+    }
+  ],
+  "notes": "Found by cross-referencing the CVE's affected-function description ('Gin mishandles a wildcard at the end of an origin string', pointing at parseWildcardRules) against `git log --reverse -S` on the two relevant string fragments (the original dead condition, then the live one) to find the exact commit that made a years-old dormant bug reachable for the first time. This is a harder, subtler introducing-commit story than case 003/004: the diff itself (1 line) looks like an unrelated bug fix ('Fix bug') and does not touch the actually-buggy line at all - the defect becomes live only because a separate line's condition changed around it. Both reviewers caught it anyway, with well-differentiated confidence levels reflecting how much of the matching logic was actually visible to each."
+}

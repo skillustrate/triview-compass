@@ -1,0 +1,120 @@
+{
+  "contractVersion": "1.0",
+  "kind": "preflight",
+  "status": "ready",
+  "reviewId": "review-de1e68eed5d5338b49ce",
+  "snapshotSha256": "de1e68eed5d5338b49ce963432eadb1f83f9ca94523645c027c2c926c113288b",
+  "policyVersion": "5264e608fe2b7a4c7923f76e0e3005ffe4e49168245b49db185751fd2b3bd8c3",
+  "mode": "full",
+  "promptVersions": [
+    {
+      "role": "code-quality",
+      "version": "27bce1d1c541c20c1d428ac3a4bd26b0431030779fb71aa43fa5e08a6f32106a"
+    },
+    {
+      "role": "security",
+      "version": "b0a7cbe7d719df231500d09537618cd4b0ca1bfd3ef6ee4601ee4c70ecb4ad14"
+    },
+    {
+      "role": "performance",
+      "version": "420a63cca0f8281775e8c0d000ed60a2048656da3f6eefe49bf3a80ca8e154a2"
+    }
+  ],
+  "scopeCounts": {
+    "included": 1,
+    "excluded": 0,
+    "binary": 0,
+    "generated": 0,
+    "oversized": 0
+  },
+  "budgets": {
+    "maxFiles": 50,
+    "maxChangedLines": 1000,
+    "maxLinesPerFile": 300,
+    "maxBytesPerFile": 1048576,
+    "maxInputTokensPerReviewer": 200000,
+    "maxOutputTokensPerReviewer": 2000,
+    "maxModelCalls": 3,
+    "timeoutSeconds": 120
+  },
+  "harness": {
+    "adapterId": "static-review-harness",
+    "adapterVersion": "1.0",
+    "controls": {
+      "readOnlyInput": "enforced",
+      "noAgentWrite": "enforced",
+      "noAgentExecution": "enforced",
+      "noAgentNetwork": "enforced",
+      "freshContextPerReviewer": "enforced",
+      "crossSessionMemoryDisabled": "enforced"
+    }
+  },
+  "reviewers": [
+    {
+      "role": "code-quality",
+      "adapterId": "claude-code-v1",
+      "providerId": "anthropic-claude-code",
+      "modelId": "sonnet",
+      "dataHandling": "hosted",
+      "adapterVersion": "1.0",
+      "inputTokenUpperBound": 71814,
+      "controls": {
+        "freshContextPerReviewer": "enforced",
+        "crossSessionMemoryDisabled": "enforced",
+        "structuredOutput": "enforced",
+        "usageReporting": "unsupported"
+      }
+    },
+    {
+      "role": "security",
+      "adapterId": "claude-code-v1",
+      "providerId": "anthropic-claude-code",
+      "modelId": "sonnet",
+      "dataHandling": "hosted",
+      "adapterVersion": "1.0",
+      "inputTokenUpperBound": 72996,
+      "controls": {
+        "freshContextPerReviewer": "enforced",
+        "crossSessionMemoryDisabled": "enforced",
+        "structuredOutput": "enforced",
+        "usageReporting": "unsupported"
+      }
+    },
+    {
+      "role": "performance",
+      "adapterId": "claude-code-v1",
+      "providerId": "anthropic-claude-code",
+      "modelId": "sonnet",
+      "dataHandling": "hosted",
+      "adapterVersion": "1.0",
+      "inputTokenUpperBound": 72459,
+      "controls": {
+        "freshContextPerReviewer": "enforced",
+        "crossSessionMemoryDisabled": "enforced",
+        "structuredOutput": "enforced",
+        "usageReporting": "unsupported"
+      }
+    }
+  ],
+  "hostedSourceDisclosure": true,
+  "limitations": [
+    "code-quality: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "code-quality: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "code-quality: Context capacity and protocol reserve are caller-configured assumptions.",
+    "model usage reporting is unavailable",
+    "security: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "security: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "security: Context capacity and protocol reserve are caller-configured assumptions.",
+    "performance: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "performance: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "performance: Context capacity and protocol reserve are caller-configured assumptions."
+  ],
+  "sandbox": {
+    "status": "not-requested"
+  },
+  "audit": {
+    "enabled": false,
+    "metadataOnly": true,
+    "retentionDays": 0
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "cases": [
+    {
+      "id": "javascript-two-providers",
+      "group": "positive",
+      "content": "const aws = 'AKIAABCDEFGHIJKLMNOP';\nconst github = 'ghp_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';\n",
+      "expected": [
+        { "value": "AKIAABCDEFGHIJKLMNOP", "kind": "credential" },
+        { "value": "ghp_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "kind": "credential" }
+      ]
+    },
+    {
+      "id": "bearer-jwt-like-log",
+      "group": "positive",
+      "content": "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzeW50aGV0aWMifQ.signatureSynthetic123\n",
+      "expected": [
+        { "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzeW50aGV0aWMifQ.signatureSynthetic123", "kind": "token" }
+      ]
+    },
+    {
+      "id": "bearer-specific-token",
+      "group": "positive",
+      "content": "Authorization: Bearer sk-AAAAAAAAAAAAAAAAAAAAAAAA\n",
+      "expected": [
+        { "value": "sk-AAAAAAAAAAAAAAAAAAAAAAAA", "kind": "token" }
+      ]
+    },
+    {
+      "id": "encrypted-private-key",
+      "group": "positive",
+      "content": "-----BEGIN ENCRYPTED PRIVATE KEY-----\nsynthetic-material\n-----END ENCRYPTED PRIVATE KEY-----\n",
+      "expected": [
+        { "value": "-----BEGIN ENCRYPTED PRIVATE KEY-----\nsynthetic-material\n-----END ENCRYPTED PRIVATE KEY-----", "kind": "private-key" }
+      ]
+    },
+    {
+      "id": "gitlab-config",
+      "group": "positive",
+      "content": "token: glpat-AAAAAAAAAAAAAAAAAAAAAAAA\n",
+      "expected": [
+        { "value": "glpat-AAAAAAAAAAAAAAAAAAAAAAAA", "kind": "credential" }
+      ]
+    },
+    {
+      "id": "short-bearer-example",
+      "group": "negative",
+      "content": "Authorization: Bearer example\n",
+      "expected": []
+    },
+    {
+      "id": "placeholder-documentation",
+      "group": "negative",
+      "content": "Use AKIA... or sk-<YOUR_TOKEN> only as placeholders.\n",
+      "expected": []
+    },
+    {
+      "id": "mismatched-pem-label",
+      "group": "negative",
+      "content": "-----BEGIN RSA PRIVATE KEY-----\nnot-a-key\n-----END EC PRIVATE KEY-----\n",
+      "expected": []
+    },
+    {
+      "id": "unknown-custom-format",
+      "group": "known-gap",
+      "content": "CUSTOM_SECRET_VALUE_WITH_NO_KNOWN_FORMAT\n",
+      "expected": []
+    },
+    {
+      "id": "basic-auth-header",
+      "group": "positive",
+      "content": "Authorization: Basic c3ludGhldGljOnBhc3N3b3JkMTIz\n",
+      "expected": [
+        { "value": "c3ludGhldGljOnBhc3N3b3JkMTIz", "kind": "credential" }
+      ]
+    },
+    {
+      "id": "query-string-api-key",
+      "group": "positive",
+      "content": "GET /v1/report?api_key=sYnTh3t1cQueryStringSecretValue&format=json HTTP/1.1\n",
+      "expected": [
+        { "value": "sYnTh3t1cQueryStringSecretValue", "kind": "credential" }
+      ]
+    },
+    {
+      "id": "query-string-session-token",
+      "group": "positive",
+      "content": "https://example.com/callback?session_token=aB3dEf6GhI9jKlMnOp&next=/dashboard\n",
+      "expected": [
+        { "value": "aB3dEf6GhI9jKlMnOp", "kind": "credential" }
+      ]
+    },
+    {
+      "id": "basic-auth-short-token",
+      "group": "negative",
+      "content": "Authorization: Basic Zm9v\n",
+      "expected": []
+    },
+    {
+      "id": "basic-prose-unrelated",
+      "group": "negative",
+      "content": "This is a Basic example of how authentication headers work in general.\n",
+      "expected": []
+    },
+    {
+      "id": "query-string-placeholder-token",
+      "group": "negative",
+      "content": "curl 'https://api.example.com/data?token=YOUR_TOKEN_HERE&api_key=xxxxxxxx'\n",
+      "expected": []
+    },
+    {
+      "id": "query-string-unrelated-param",
+      "group": "negative",
+      "content": "https://example.com/search?sort=basic&page=2&token=<TOKEN>\n",
+      "expected": []
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "suite": "performance-review",
+  "description": "Behavioral evals for evidence-backed performance review.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review the supplied product rendering implementation and benchmark for performance risks. Do not edit or execute them.",
+      "expected_output": "Evidence-backed findings about complexity and measurement quality, without fabricated performance numbers",
+      "files": [
+        "performance-review/products.js",
+        "performance-review/benchmark.js"
+      ],
+      "expectations": [
+        "The reviewer identifies that the implementation sorts the full product list repeatedly inside the render loop",
+        "The reviewer explains the resulting superlinear work without inventing a measured latency",
+        "The reviewer notes that the benchmark is a single measurement without a baseline or repeated samples",
+        "The reviewer recommends measuring the same user-facing workload before and after a proposed change"
+      ]
+    }
+  ]
+}

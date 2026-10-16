@@ -1,0 +1,36 @@
+{
+  "contractVersion": "1.0",
+  "mode": "full",
+  "reviewers": ["code-quality", "security", "performance"],
+  "budgets": {
+    "maxFiles": 50,
+    "maxChangedLines": 1000,
+    "maxLinesPerFile": 300,
+    "maxBytesPerFile": 1048576,
+    "maxInputTokensPerReviewer": 100000,
+    "maxOutputTokensPerReviewer": 2000,
+    "maxModelCalls": 3,
+    "timeoutSeconds": 120
+  },
+  "dataPolicy": {
+    "mode": "local-only",
+    "selectedProvider": "lm-studio-local",
+    "allowedProviders": ["lm-studio-local"]
+  },
+  "pathPolicy": {
+    "excludedPathGlobs": [],
+    "generatedPathGlobs": ["**/node_modules/**", "**/vendor/**", "**/dist/**", "**/build/**", "**/coverage/**"],
+    "symlinkHandling": "reject",
+    "binaryHandling": "report-and-skip"
+  },
+  "secretPolicy": {
+    "scannerRequired": true,
+    "sensitivePathGlobs": [".env", ".env.*", "**/.env", "**/.env.*", "**/.aws/**", "**/.ssh/**", "**/.config/gcloud/**", "**/credentials", "**/credentials.*", "**/*.pem", "**/*.key", "**/*.p12", "**/*.pfx"],
+    "onScannerFailure": "stop-review"
+  },
+  "sandbox": {
+    "executionRequested": false,
+    "backend": "none",
+    "network": "disabled"
+  }
+}

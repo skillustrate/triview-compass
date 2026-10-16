@@ -1,0 +1,21 @@
+Review: partial; verdict: request-changes
+Snapshot: f123adeed7efea35269a6cab4808cd25d6d72ba975a8e35e238bc7d1d2d7deeb
+code-quality: omitted — Omitted by explicit partial-review policy.
+security: completed (anthropic-claude-code/sonnet via claude-code-v1)
+performance: omitted — Omitted by explicit partial-review policy.
+Coverage: 1 included, 0 excluded
+Critical: OS command injection via unsanitized label and targetDir in exec (src/lib/run-backup.js:3)
+  The shell command is built by concatenating label and targetDir and passed to exec, which runs it through a shell. If either value is attacker-influenced, shell metacharacters (e.g. ; $() backticks) allow arbitrary command execution with the process's privileges. A label containing ../ can also write the archive outside /backups, and a targetDir beginning with '-' can inject tar options.
+  Suggested change: Use execFile or spawn with an argument array and no shell, e.g. execFile('tar', ['-czf', path.join('/backups', safeLabel + '.tar.gz'), '--', targetDir]). Validate label against a strict allowlist such as /^[A-Za-z0-9_-]+$/. Resolve targetDir and check that it sits under an allowed base directory.
+Optional: Error details discarded and no completion signal (src/lib/run-backup.js:5)
+  On failure, the error and stderr are dropped and only a generic message is logged. The function returns nothing, so callers cannot tell whether the backup succeeded or react to a failure. This hinders diagnosis and means failed backups can go unnoticed.
+  Suggested change: Return a Promise or accept a callback, and propagate the error. Log err.message and stderr to an appropriate error log.
+Optional: listBackups builds an O(n²) array with unbounded n (src/lib/run-backup.js:14)
+  The nested loops allocate n² strings. If n is externally controlled, a large value causes memory exhaustion and blocks the event loop, which is a denial-of-service risk. The function also does not appear to list backups at all.
+  Suggested change: Cap n or validate it. Replace the function with one that reads the actual backup listing, using pagination or streaming if needed.
+Sandbox: not-requested
+Skipped: Sandbox verification was not requested.
+Limitation: security: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.
+Limitation: security: Model identity is the configured CLI selection; exact served model identity is unverified.
+Limitation: security: Context capacity and protocol reserve are caller-configured assumptions.
+Limitation: model usage reporting is unavailable

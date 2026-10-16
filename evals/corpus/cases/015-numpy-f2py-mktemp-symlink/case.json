@@ -1,0 +1,39 @@
+{
+  "id": "015-numpy-f2py-mktemp-symlink",
+  "status": "dispositioned",
+  "addedDate": "2026-10-14",
+  "dispositionedDate": "2026-10-14",
+  "source": {
+    "repository": "external: numpy/numpy (https://github.com/numpy/numpy), cloned locally for this review",
+    "baseRevision": "b7850701a31127cad8c7399cea6be9cd5f71bec5",
+    "targetRevision": "0bb46c1448b0d3f5453d5182a17ea7ac5854ee15"
+  },
+  "groundTruth": {
+    "type": "known-fix",
+    "description": "Fixes CVE-2014-1858/GHSA-cw6w-4rcx-xphc: numpy.f2py.compile() and the f2py CLI's --build-dir default used tempfile.mktemp(), which only returns a filename that a local attacker can race to replace with a symlink before the caller opens/creates it (a classic TOCTOU symlink attack enabling arbitrary file write). The fix replaces mktemp()-then-open with tempfile.NamedTemporaryFile() (atomic create) in __init__.py's compile(), and tempfile.mkdtemp() (atomic directory create) for the CLI's build-dir default in f2py2e.py. First data-science-domain case in the corpus (prior cases are all web/backend/CLI tooling).",
+    "evidence": [
+      { "path": "numpy/f2py/__init__.py", "startLine": 28, "endLine": 47, "note": "mktemp()+open replaced by NamedTemporaryFile(), written/flushed/closed in a try/finally" },
+      { "path": "numpy/f2py/f2py2e.py", "startLine": 424, "endLine": 427, "note": "build_dir default switched from mktemp() to mkdtemp()" }
+    ],
+    "expectedVerdict": "recommend-approval-with-no-blocking-findings",
+    "confirmingFix": "this commit itself; see GHSA-cw6w-4rcx-xphc / CVE-2014-1858"
+  },
+  "requestPath": "./request.json",
+  "policyPath": "./policy.json",
+  "runs": [
+    {
+      "label": "live run, Claude Code CLI 2.1.299, external repository input, maxInputTokensPerReviewer 150000, context-window 250000",
+      "reportPath": "./report.json",
+      "dispositions": [
+        {
+          "findingId": "finding-1",
+          "reviewer": "code-quality",
+          "severity": "Required",
+          "verdict": "confirmed",
+          "note": "Verified by direct execution: `tempfile.NamedTemporaryFile(suffix='.f')` defaults to binary mode ('w+b'); running `f.write(source)` with a str argument against it raises `TypeError: a bytes-like object is required, not 'str'` under Python 3 (reproduced directly, not inferred). The file does declare `from __future__ import ... print_function`, consistent with dual Python 2/3 targeting at this point in numpy's history. This is a real, change-introduced functional regression: the OLD code's equivalent path used `open(fname, 'w')` (text mode), so it worked; the NEW code's `source_fn is None` branch switched to NamedTemporaryFile's binary default while the `source_fn` branch right next to it still uses `open(source_fn, 'w')` (text mode) - the finding's own observation that \"the two branches behave differently\" is accurate. The security fix (replacing a symlink-race-prone mktemp() with an atomic create) is itself sound; this is an independent, genuine bug introduced alongside it in the same commit, not a restatement of the CVE this change fixes."
+        }
+      ]
+    }
+  ],
+  "notes": "The real commit also touched three test files (test_memmap.py, test_multiarray.py, test_io.py) adjusting assertions for the new temp-file behavior; excluded from the reviewed diff since they're test-only follow-on and not part of the security-relevant change itself.\n\nThis case did not come back clean as the groundTruth's expectedVerdict anticipated (patterned on the historical CVE fix alone) - the live run surfaced a real, confirmed-by-execution Required finding unrelated to the CVE being fixed: a Python-3 binary-vs-text temp-file mode regression introduced in the same commit. Left as-is rather than retroactively rewritten, consistent with how this corpus handles a groundTruth description that turns out to be incomplete once a run actually happens (see also case 013's notes on the same point)."
+}

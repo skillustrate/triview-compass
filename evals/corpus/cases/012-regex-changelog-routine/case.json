@@ -1,0 +1,28 @@
+{
+  "id": "012-regex-changelog-routine",
+  "status": "dispositioned",
+  "addedDate": "2026-10-14",
+  "dispositionedDate": "2026-10-14",
+  "source": {
+    "repository": "external: rust-lang/regex (https://github.com/rust-lang/regex), cloned locally for this review",
+    "baseRevision": "782152f2531550ace5c3a542c4e5bddd5dc2d000",
+    "targetRevision": "ada2a5a6a08c8038daed9f77e1b4d9a3ca9930da"
+  },
+  "groundTruth": {
+    "type": "known-clean",
+    "description": "A changelog-only commit ('changelog: update to include #1333'): 10 lines appended to CHANGELOG.md, no code touched. Second known-clean control case in the corpus (after 007), and the first in a different language/repo, specifically chosen because CHANGELOG.md here is unusually large (1823 lines / 73KB accumulated over years), making this also a real test of whether a large irrelevant file causes spurious findings or budget trouble distinct from the code-review question.",
+    "evidence": [],
+    "expectedVerdict": "recommend-approval-with-zero-findings"
+  },
+  "requestPath": "./request.json",
+  "policyPath": "./policy.json",
+  "runs": [
+    {
+      "label": "live run, Claude Code CLI 2.1.299, external repository input, context-window 300000",
+      "reportPath": "./report.json",
+      "dispositions": [],
+      "outcomeNote": "All three reviewers completed with zero findings on the changelog-only diff. Matches the known-clean ground truth."
+    }
+  ],
+  "notes": "Preflight initially refused BUDGET_EXCEEDED: the included CHANGELOG.md alone is 73KB, pushing input tokens past the default 100k cap even for a 10-line diff. Raised maxInputTokensPerReviewer to 190000 and the CLI --context-window to 300000 (recorded here since --context-window is a run-time flag, not something stored in policy.json). This is a reminder that 'routine, nothing to find' doesn't always mean 'small' - a large unrelated file can still need real budget headroom."
+}

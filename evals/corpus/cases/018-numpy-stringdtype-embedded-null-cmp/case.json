@@ -1,0 +1,32 @@
+{
+  "id": "018-numpy-stringdtype-embedded-null-cmp",
+  "status": "dispositioned",
+  "addedDate": "2026-10-14",
+  "dispositionedDate": "2026-10-14",
+  "source": {
+    "repository": "external: numpy/numpy (https://github.com/numpy/numpy), cloned locally for this review",
+    "baseRevision": "8906919c2f37dcdd11f4d61298486c5261fb87b9",
+    "targetRevision": "87772ec4a0bf40f9e3f24de48bfb5b745bef2576"
+  },
+  "groundTruth": {
+    "type": "known-fix",
+    "description": "A recent (2026) non-security correctness fix in numpy's native StringDType (PR #31662): NpyString_cmp compared string contents with strncmp(), which stops comparing at the first embedded NUL byte in either operand. Since numpy's native string type explicitly supports embedded NUL bytes (unlike C strings), two distinct strings that share a common prefix up to their first NUL byte compared as equal, silently corrupting equality, ordering, sort, and searchsorted results for any such strings. The fix is a one-line change from strncmp to memcmp, plus a doc-comment correction and a new embedded-NUL regression test suite. Second corpus case in C (after case 016), second non-security correctness case (after 008/014), and the second case where the defect lived in a specific function whose doc comment explicitly promised C-strcmp semantics - a useful comment/implementation mismatch of the same shape as case 013's finding-2.",
+    "evidence": [
+      { "path": "numpy/_core/src/multiarray/stringdtype/static_string.c", "startLine": 728, "endLine": 734, "note": "strncmp replaced by memcmp in NpyString_cmp" },
+      { "path": "numpy/_core/src/multiarray/stringdtype/static_string.h", "startLine": 82, "endLine": 88, "note": "doc comment corrected from 'same semantics as strcmp on null-terminated C strings' to 'compare using all bytes'" }
+    ],
+    "expectedVerdict": "recommend-approval-with-no-blocking-findings",
+    "confirmingFix": "this commit itself (PR #31662)"
+  },
+  "requestPath": "./request.json",
+  "policyPath": "./policy.json",
+  "runs": [
+    {
+      "label": "live run, Claude Code CLI 2.1.299, external repository input, maxInputTokensPerReviewer 150000, context-window 250000",
+      "reportPath": "./report.json",
+      "dispositions": [],
+      "outcomeNote": "All three reviewers completed with zero findings against the one-line strncmp-to-memcmp fix plus its doc-comment correction."
+    }
+  ],
+  "notes": "The introducing commit for this bug (ced4336b9, 'API: add stringdtype to numpy') is the original large feature commit that added the entire StringDType; far too large and unfocused to serve as a known-defect-present case on its own, so this case uses the fix instead. maxInputTokensPerReviewer bumped to 150000 per the same fixed ~101k protocol-reserve baseline observed in case 015, not file size."
+}

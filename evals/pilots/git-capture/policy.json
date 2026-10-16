@@ -1,0 +1,101 @@
+{
+  "contractVersion": "1.0",
+  "mode": "full",
+  "reviewers": [
+    "code-quality",
+    "security",
+    "performance"
+  ],
+  "budgets": {
+    "maxFiles": 50,
+    "maxChangedLines": 6000,
+    "maxLinesPerFile": 2000,
+    "maxBytesPerFile": 1048576,
+    "maxInputTokensPerReviewer": 100000,
+    "maxOutputTokensPerReviewer": 2000,
+    "maxModelCalls": 3,
+    "timeoutSeconds": 120
+  },
+  "dataPolicy": {
+    "mode": "approved-hosted",
+    "selectedProvider": "anthropic-claude-code",
+    "allowedProviders": [
+      "anthropic-claude-code"
+    ]
+  },
+  "pathPolicy": {
+    "excludedPathGlobs": [
+      "triview-compass/README.md",
+      "triview-compass/RELEASE.md",
+      "triview-compass/SECURITY.md",
+      "triview-compass/STATE.md",
+      "triview-compass/agents/code-quality-reviewer.md",
+      "triview-compass/contracts/schemas/preflight-report.schema.json",
+      "triview-compass/docs/capability-matrix.md",
+      "triview-compass/docs/security-review.md",
+      "triview-compass/evals/README.md",
+      "triview-compass/evals/behavior/suite.json",
+      "triview-compass/evals/evidence/dependency-audit-2026-10-14.json",
+      "triview-compass/evals/evidence/phase6-bounded-anchor-2026-10-14.json",
+      "triview-compass/evals/evidence/phase6-clean-followup-2026-10-14.json",
+      "triview-compass/evals/evidence/phase6-final-sonnet-2026-10-14.json",
+      "triview-compass/evals/evidence/phase6-sonnet-2026-10-14.json",
+      "triview-compass/evals/evidence/phase6-sonnet-grounded-2026-10-14.json",
+      "triview-compass/evals/scripts/check-package.js",
+      "triview-compass/evals/scripts/check-release.js",
+      "triview-compass/evals/scripts/run-model-evals.js",
+      "triview-compass/evals/scripts/score-behavior.js",
+      "triview-compass/evals/security/threat-coverage.json",
+      "triview-compass/package.json",
+      "triview-compass/plan.md",
+      "triview-compass/skills/core-review/SKILL.md",
+      "triview-compass/skills/reviewer-briefs/core-review.md",
+      "triview-compass/src/adapters/model/README.md",
+      "triview-compass/src/adapters/model/claude-code.js",
+      "triview-compass/src/adapters/model/lm-studio.js",
+      "triview-compass/src/cli/README.md",
+      "triview-compass/src/cli/format-report.js",
+      "triview-compass/src/core/adapter-handshake.js",
+      "triview-compass/src/core/preflight-report.js",
+      "triview-compass/src/core/static-review.js",
+      "triview-compass/tests/behavior-score.test.js",
+      "triview-compass/tests/claude-code.test.js",
+      "triview-compass/tests/format-report.test.js",
+      "triview-compass/tests/lm-studio.test.js",
+      "triview-compass/tests/static-review.test.js"
+    ],
+    "generatedPathGlobs": [
+      "**/node_modules/**",
+      "**/vendor/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/coverage/**"
+    ],
+    "symlinkHandling": "reject",
+    "binaryHandling": "report-and-skip"
+  },
+  "secretPolicy": {
+    "scannerRequired": true,
+    "sensitivePathGlobs": [
+      ".env",
+      ".env.*",
+      "**/.env",
+      "**/.env.*",
+      "**/.aws/**",
+      "**/.ssh/**",
+      "**/.config/gcloud/**",
+      "**/credentials",
+      "**/credentials.*",
+      "**/*.pem",
+      "**/*.key",
+      "**/*.p12",
+      "**/*.pfx"
+    ],
+    "onScannerFailure": "stop-review"
+  },
+  "sandbox": {
+    "executionRequested": false,
+    "backend": "none",
+    "network": "disabled"
+  }
+}

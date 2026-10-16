@@ -1,0 +1,267 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Review Preflight Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "kind",
+    "status"
+  ],
+  "properties": {
+    "contractVersion": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "preflight"
+    },
+    "status": {
+      "enum": [
+        "ready",
+        "refused"
+      ]
+    },
+    "code": {
+      "$ref": "common.schema.json#/$defs/safeIdentifier"
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024
+    },
+    "reviewId": {
+      "$ref": "common.schema.json#/$defs/safeIdentifier"
+    },
+    "snapshotSha256": {
+      "$ref": "common.schema.json#/$defs/sha256"
+    },
+    "policyVersion": {
+      "$ref": "common.schema.json#/$defs/sha256"
+    },
+    "mode": {
+      "$ref": "common.schema.json#/$defs/reviewMode"
+    },
+    "scopeCounts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "budgets": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "harness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "adapterId",
+        "adapterVersion",
+        "controls"
+      ],
+      "properties": {
+        "adapterId": {
+          "$ref": "common.schema.json#/$defs/safeIdentifier"
+        },
+        "adapterVersion": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "controls": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "common.schema.json#/$defs/controlState"
+          }
+        }
+      }
+    },
+    "reviewers": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "role",
+          "adapterId",
+          "providerId",
+          "modelId",
+          "dataHandling",
+          "adapterVersion",
+          "inputTokenUpperBound",
+          "controls"
+        ],
+        "properties": {
+          "role": {
+            "$ref": "common.schema.json#/$defs/reviewer"
+          },
+          "adapterId": {
+            "$ref": "common.schema.json#/$defs/safeIdentifier"
+          },
+          "providerId": {
+            "$ref": "common.schema.json#/$defs/safeIdentifier"
+          },
+          "modelId": {
+            "$ref": "common.schema.json#/$defs/safeIdentifier"
+          },
+          "adapterVersion": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "dataHandling": {
+            "enum": [
+              "local",
+              "hosted"
+            ]
+          },
+          "inputTokenUpperBound": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "controls": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "common.schema.json#/$defs/controlState"
+            }
+          }
+        }
+      }
+    },
+    "hostedSourceDisclosure": {
+      "type": "boolean"
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 2048
+      }
+    },
+    "sandbox": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "not-requested",
+            "ready",
+            "skipped"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "guidance": {
+          "const": "https://podman.io/docs/installation"
+        },
+        "profile": {
+          "const": "linux-rootless-podman-v1"
+        },
+        "image": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "imageSha256": {
+          "$ref": "common.schema.json#/$defs/sha256"
+        }
+      }
+    },
+    "audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "metadataOnly",
+        "retentionDays"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "metadataOnly": {
+          "const": true
+        },
+        "retentionDays": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3650
+        }
+      }
+    },
+    "promptVersions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "role",
+          "version"
+        ],
+        "properties": {
+          "role": {
+            "$ref": "common.schema.json#/$defs/reviewer"
+          },
+          "version": {
+            "$ref": "common.schema.json#/$defs/sha256"
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "ready"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "reviewId",
+          "snapshotSha256",
+          "policyVersion",
+          "mode",
+          "scopeCounts",
+          "budgets",
+          "harness",
+          "reviewers",
+          "hostedSourceDisclosure",
+          "limitations"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "refused"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "code",
+          "reason"
+        ]
+      }
+    }
+  ]
+}

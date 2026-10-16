@@ -1,0 +1,119 @@
+# Copy this file into your own repository's .github/workflows/ directory and
+# fill in the two steps marked "TODO (adopter)" below. See
+# examples/github-actions/README.md for what each one needs and why they
+# can't be filled in for you.
+#
+# This workflow is advisory only. Do not add this job as a required status
+# check in branch protection -- TriView-Compass is a second opinion, not a
+# merge gate (see README.md's "Where this fits in your review process").
+# `continue-on-error` is set deliberately throughout so a failed, incomplete,
+# or timed-out review can never block your PR; only the comment it posts
+# reflects the outcome.
+#
+# This file names no model provider on purpose: review.js and every example
+# in this project load a model adapter generically through --adapter-module,
+# never from a closed list the CLI maintains, and this template follows the
+# same rule.
+"on":
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      # Actions are pinned by commit SHA, not a mutable tag -- this job holds
+      # pull-requests: write and a model credential secret, so a compromised
+      # tag would be a real exfiltration path. Each SHA below was resolved
+      # from the named tag's own ref at the time this template was written
+      # (see the trailing comment for which release that was); re-verify and
+      # re-pin periodically rather than trusting it indefinitely.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # Both the base and head commits must be present locally without a
+          # lazy fetch (review.js's Git capture sets GIT_NO_LAZY_FETCH=1), so
+          # this needs full history, not GitHub's shallow default.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+
+      # TODO (adopter): install TriView-Compass. No published registry
+      # package exists as of this template's writing; pin a commit from
+      # wherever you've sourced it from until one does.
+      - name: Install TriView-Compass
+        run: npm install --no-save git+https://github.com/<your-org-or-fork>/triview-compass.git#<pinned-commit>
+
+      # TODO (adopter): supply your model adapter's connection details here,
+      # read from a GitHub Actions secret you create -- never commit real
+      # hosts, ports, or keys. See the README for two concrete, named
+      # options (a Claude Code subscription profile restored from a secret,
+      # or a self-hosted runner reaching a local LM Studio rig) and their
+      # disclosed caveats.
+      #
+      # The secret is passed through env:, not interpolated into the script
+      # via ${{ }} -- expanding a secret directly into shell text lets any
+      # quote, backtick, or $( in its value break out of the string or run
+      # commands, and GitHub's log masking does not reliably catch a value
+      # that's been transformed (e.g. re-escaped) before being printed.
+      # printf '%s' writes it byte-for-byte, unlike echo, which may still
+      # interpret backslash sequences depending on the shell.
+      - name: Write adapter config
+        env:
+          TRIVIEW_ADAPTER_CONFIG: ${{ secrets.TRIVIEW_ADAPTER_CONFIG }}
+        run: printf '%s' "$TRIVIEW_ADAPTER_CONFIG" > "$RUNNER_TEMP/adapter-config.json"
+
+      - name: Build review request
+        run: |
+          node node_modules/triview-compass/examples/github-actions/build-review-request.js \
+            "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" \
+            > "$RUNNER_TEMP/request.json"
+
+      - name: Run review
+        id: review
+        continue-on-error: true
+        run: |
+          node node_modules/triview-compass/src/cli/review.js \
+            --request "$RUNNER_TEMP/request.json" \
+            --policy .triview/policy.json \
+            --repository "$GITHUB_WORKSPACE" \
+            --adapter-module node_modules/triview-compass/path/to/your-adapter.js \
+            --adapter-export yourExportedFactoryName \
+            --adapter-config "$RUNNER_TEMP/adapter-config.json" \
+            --format text > "$RUNNER_TEMP/review-output.txt" 2> "$RUNNER_TEMP/review-stderr.txt"
+
+      - name: Post advisory comment
+        if: always()
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        with:
+          script: |
+            const fs = require('fs');
+            const MAX_COMMENT_LENGTH = 60000;
+            let body = '';
+            try { body = fs.readFileSync(`${process.env.RUNNER_TEMP}/review-output.txt`, 'utf8').trim(); } catch {}
+            if (!body) {
+              try { body = fs.readFileSync(`${process.env.RUNNER_TEMP}/review-stderr.txt`, 'utf8').trim(); } catch {}
+            }
+            if (!body) body = '(no output)';
+            if (body.length > MAX_COMMENT_LENGTH) body = `${body.slice(0, MAX_COMMENT_LENGTH)}\n...(truncated)`;
+            // The review output comes from the reviewed PR's own diff, so it
+            // is untrusted text: a run of backticks as long as the fence
+            // would close it early and let whatever follows render as plain
+            // markdown (links, @mentions, headings) instead of code. Make
+            // the fence longer than the longest run actually in the body.
+            const longestBacktickRun = Math.max(2, ...(body.match(/`+/gu) ?? ['']).map((run) => run.length));
+            const fence = '`'.repeat(longestBacktickRun + 1);
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: '### TriView-Compass advisory review\n\n'
+                + '_Report-only: this is an advisory second opinion, not a merge gate._\n\n'
+                + `${fence}\n${body}\n${fence}`,
+            });

@@ -1,0 +1,21 @@
+{
+  "suite": "security-review",
+  "description": "Behavioral evals for evidence-backed security review.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review the attached webhook preview implementation for security flaws. Do not modify or execute the code.",
+      "expected_output": "Evidence-backed findings about server-side URL fetching, redirect handling, response limits, and test coverage",
+      "files": [
+        "security-review/webhook.js",
+        "security-review/webhook.test.js"
+      ],
+      "expectations": [
+        "The reviewer identifies the user-controlled URL as an SSRF trust boundary",
+        "The reviewer checks redirect behavior and private or reserved destination access",
+        "The reviewer notices that slicing the returned body after response.text() does not bound the amount read",
+        "The reviewer describes missing test coverage without claiming that the implementation has been fixed"
+      ]
+    }
+  ]
+}

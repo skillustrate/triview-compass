@@ -1,0 +1,256 @@
+{
+  "contractVersion": "1.0",
+  "reviewId": "review-e6778b0fb83c2c0e2c7e",
+  "snapshotSha256": "e6778b0fb83c2c0e2c7e52e3fc6798ebefb3c49f07fc3b45469c58bc4dbcb256",
+  "mode": "full",
+  "status": "complete",
+  "verdict": "request-changes",
+  "reviewers": [
+    {
+      "role": "code-quality",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-68414965-1370-4aea-ac1a-9c658302dfd7",
+      "contextId": "0b3559df-77bf-4cc4-b991-2974d37bee16"
+    },
+    {
+      "role": "security",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-f178e0e9-eb1f-43ac-93ec-5fb7624bf493",
+      "contextId": "c4e26442-c974-479c-a052-8f1672ff2211"
+    },
+    {
+      "role": "performance",
+      "status": "completed",
+      "adapter": {
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet"
+      },
+      "invocationId": "invocation-dab1cab3-e095-4792-8315-ca0344adedd8",
+      "contextId": "84f53ad4-ec6b-48f6-8ae6-fd8fdaccc8dd"
+    }
+  ],
+  "findings": [
+    {
+      "id": "finding-1",
+      "category": "security",
+      "severity": "Required",
+      "title": "Prototype-pollution guard can be bypassed through constructor.prototype",
+      "impact": "The guard only rejects the `__proto__` key. It also tries to detect built-in prototypes by identity comparison. A key path such as `--constructor.prototype.x=1` gets past it. At i=0, `o.constructor` is the `Object` function, so `o` becomes `Object`. At i=1, `o['prototype'] === Object.prototype` is true. The replacement assignment `o[key] = {}` silently fails because `Object.prototype` is non-writable on `Object`. The loop then sets `o = o[key]`, which is still `Object.prototype`. The final assignment `o[x] = value` then pollutes `Object.prototype`. The new tests don't cover this path.",
+      "evidence": {
+        "path": "index.js",
+        "startLine": 71,
+        "endLine": 88
+      },
+      "recommendation": "Reject `constructor` and `prototype` keys. At minimum, reject `constructor` when it is followed by `prototype`. Alternatively, only traverse own properties, using `Object.prototype.hasOwnProperty.call(o, key)`, and create plain objects for the rest. Add a regression test for `--constructor.prototype.x`.",
+      "sourceFindings": [
+        {
+          "reviewer": "code-quality",
+          "findingId": "f1",
+          "severity": "Required",
+          "confidence": 0.8
+        }
+      ],
+      "disagreement": false
+    },
+    {
+      "id": "finding-2",
+      "category": "security",
+      "severity": "Required",
+      "title": "Prototype pollution fix is incomplete: constructor.prototype path bypasses the guards",
+      "impact": "The patch blocks only the `__proto__` key and tries to detect prototype objects by identity. An attacker who controls argv can pass `--constructor.prototype.polluted=1`. `o['constructor']` is the `Object` function, which is not one of the checked prototypes. On the next iteration `o['prototype'] === Object.prototype`, so the code runs `o[key] = {}`. `Object.prototype` is non-writable, so that assignment silently fails in sloppy mode, and `o = o[key]` still points at the real `Object.prototype`. The final assignment then pollutes it globally. This can cause denial of service, logic or authorization bypass, or code execution gadgets in any application that parses untrusted arguments.",
+      "evidence": {
+        "path": "index.js",
+        "startLine": 72,
+        "endLine": 88
+      },
+      "sourceFindings": [
+        {
+          "reviewer": "security",
+          "findingId": "F-1",
+          "severity": "Required",
+          "confidence": 0.85
+        }
+      ],
+      "disagreement": false
+    },
+    {
+      "id": "finding-3",
+      "category": "testing",
+      "severity": "Optional",
+      "title": "Tests do not cover the constructor.prototype pollution vector",
+      "impact": "The tests only exercise `__proto__` paths, so the bypass above would go undetected.",
+      "evidence": {
+        "path": "test/proto.js",
+        "startLine": 4,
+        "endLine": 37
+      },
+      "recommendation": "Add tests for `--constructor.prototype.z=1` and `--x.constructor.prototype.z`. Assert that `{}.z` is undefined. In `setKey`, reject `__proto__`, `constructor` and `prototype` keys, or use `Object.prototype.hasOwnProperty` checks and `Object.create(null)` containers.",
+      "sourceFindings": [
+        {
+          "reviewer": "security",
+          "findingId": "F-2",
+          "severity": "Optional",
+          "confidence": 0.6
+        }
+      ],
+      "disagreement": false
+    }
+  ],
+  "unverifiableFindings": [],
+  "coverage": {
+    "includedPaths": [
+      "index.js",
+      "test/proto.js"
+    ],
+    "excludedPaths": [],
+    "skippedChecks": [
+      "Sandbox verification was not requested."
+    ]
+  },
+  "limitations": [
+    "code-quality: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "code-quality: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "code-quality: Context capacity and protocol reserve are caller-configured assumptions.",
+    "model usage reporting is unavailable",
+    "security: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "security: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "security: Context capacity and protocol reserve are caller-configured assumptions.",
+    "performance: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+    "performance: Model identity is the configured CLI selection; exact served model identity is unverified.",
+    "performance: Context capacity and protocol reserve are caller-configured assumptions."
+  ],
+  "preflight": {
+    "contractVersion": "1.0",
+    "kind": "preflight",
+    "status": "ready",
+    "reviewId": "review-e6778b0fb83c2c0e2c7e",
+    "snapshotSha256": "e6778b0fb83c2c0e2c7e52e3fc6798ebefb3c49f07fc3b45469c58bc4dbcb256",
+    "policyVersion": "6bc148fa509f0906250318d47fbb2d4f0f37ba3105e73d35660a906adbc5ee24",
+    "mode": "full",
+    "promptVersions": [
+      {
+        "role": "code-quality",
+        "version": "27bce1d1c541c20c1d428ac3a4bd26b0431030779fb71aa43fa5e08a6f32106a"
+      },
+      {
+        "role": "security",
+        "version": "b0a7cbe7d719df231500d09537618cd4b0ca1bfd3ef6ee4601ee4c70ecb4ad14"
+      },
+      {
+        "role": "performance",
+        "version": "420a63cca0f8281775e8c0d000ed60a2048656da3f6eefe49bf3a80ca8e154a2"
+      }
+    ],
+    "scopeCounts": {
+      "included": 2,
+      "excluded": 0,
+      "binary": 0,
+      "generated": 0,
+      "oversized": 0
+    },
+    "budgets": {
+      "maxFiles": 50,
+      "maxChangedLines": 6000,
+      "maxLinesPerFile": 2000,
+      "maxBytesPerFile": 1048576,
+      "maxInputTokensPerReviewer": 100000,
+      "maxOutputTokensPerReviewer": 2000,
+      "maxModelCalls": 3,
+      "timeoutSeconds": 120
+    },
+    "harness": {
+      "adapterId": "static-review-harness",
+      "adapterVersion": "1.0",
+      "controls": {
+        "readOnlyInput": "enforced",
+        "noAgentWrite": "enforced",
+        "noAgentExecution": "enforced",
+        "noAgentNetwork": "enforced",
+        "freshContextPerReviewer": "enforced",
+        "crossSessionMemoryDisabled": "enforced"
+      }
+    },
+    "reviewers": [
+      {
+        "role": "code-quality",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 83360,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      },
+      {
+        "role": "security",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 84542,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      },
+      {
+        "role": "performance",
+        "adapterId": "claude-code-v1",
+        "providerId": "anthropic-claude-code",
+        "modelId": "sonnet",
+        "dataHandling": "hosted",
+        "adapterVersion": "1.0",
+        "inputTokenUpperBound": 84005,
+        "controls": {
+          "freshContextPerReviewer": "enforced",
+          "crossSessionMemoryDisabled": "enforced",
+          "structuredOutput": "enforced",
+          "usageReporting": "unsupported"
+        }
+      }
+    ],
+    "hostedSourceDisclosure": true,
+    "limitations": [
+      "code-quality: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "code-quality: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "code-quality: Context capacity and protocol reserve are caller-configured assumptions.",
+      "model usage reporting is unavailable",
+      "security: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "security: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "security: Context capacity and protocol reserve are caller-configured assumptions.",
+      "performance: CLI token usage is unavailable before invocation; a large fixed protocol reserve is used.",
+      "performance: Model identity is the configured CLI selection; exact served model identity is unverified.",
+      "performance: Context capacity and protocol reserve are caller-configured assumptions."
+    ],
+    "sandbox": {
+      "status": "not-requested"
+    },
+    "audit": {
+      "enabled": false,
+      "metadataOnly": true,
+      "retentionDays": 0
+    }
+  },
+  "sandbox": {
+    "status": "not-requested"
+  }
+}

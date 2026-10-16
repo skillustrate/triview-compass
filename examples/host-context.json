@@ -1,0 +1,30 @@
+{
+  "contractVersion": "1.0",
+  "currentHarness": "current",
+  "harnesses": {
+    "current": {
+      "adapterId": "current-account",
+      "providerId": "current-provider",
+      "modelId": "current-model",
+      "dataHandling": "local",
+      "runtime": {
+        "kind": "adapter-module",
+        "module": "/absolute/path/to/current-adapter.mjs",
+        "export": "createAdapter",
+        "config": { "modelId": "current-model" }
+      }
+    },
+    "alternative": {
+      "adapterId": "alternative-account",
+      "providerId": "alternative-provider",
+      "modelId": "alternative-model",
+      "dataHandling": "local",
+      "runtime": {
+        "kind": "adapter-module",
+        "module": "/absolute/path/to/alternative-adapter.mjs",
+        "export": "createAdapter",
+        "config": { "modelId": "alternative-model" }
+      }
+    }
+  }
+}

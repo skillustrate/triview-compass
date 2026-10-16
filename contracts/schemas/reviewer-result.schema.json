@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Independent Reviewer Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "reviewId", "snapshotSha256", "invocationId", "contextId", "reviewer", "adapter", "promptVersion", "skills", "status", "findings", "verdict"],
+  "properties": {
+    "contractVersion": { "const": "1.0" },
+    "reviewId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+    "snapshotSha256": { "$ref": "common.schema.json#/$defs/sha256" },
+    "invocationId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+    "contextId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+    "reviewer": { "$ref": "common.schema.json#/$defs/reviewer" },
+    "adapter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adapterId", "providerId", "modelId"],
+      "properties": {
+        "adapterId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+        "providerId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+        "modelId": { "$ref": "common.schema.json#/$defs/safeIdentifier" }
+      }
+    },
+    "promptVersion": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+    "skills": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/skill" },
+      "uniqueItems": true,
+      "contains": { "const": "core-review" }
+    },
+    "status": { "type": "string", "enum": ["completed", "failed"] },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "category", "severity", "title", "impact", "evidence", "confidence", "skill"],
+        "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+          "category": { "type": "string", "enum": ["correctness", "security", "performance", "maintainability", "architecture", "testing", "privacy", "supply-chain", "reliability", "other"] },
+          "severity": { "$ref": "common.schema.json#/$defs/severity" },
+          "title": { "type": "string", "minLength": 1, "maxLength": 256 },
+          "impact": { "type": "string", "minLength": 1, "maxLength": 4096 },
+          "evidence": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path"],
+            "properties": {
+              "path": { "$ref": "common.schema.json#/$defs/relativePath" },
+              "startLine": { "type": "integer", "minimum": 1 },
+              "endLine": { "type": "integer", "minimum": 1 },
+              "diffHunk": { "type": "string", "minLength": 1, "maxLength": 2048 }
+            },
+            "dependentRequired": { "startLine": ["endLine"], "endLine": ["startLine"] },
+            "oneOf": [
+              { "required": ["startLine", "endLine"] },
+              { "required": ["diffHunk"] }
+            ]
+          },
+          "recommendation": { "type": "string", "maxLength": 4096 },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "skill": { "$ref": "common.schema.json#/$defs/skill" }
+        }
+      }
+    },
+    "verdict": { "type": "string", "enum": ["recommend-approval", "request-changes", "incomplete"] },
+    "errorSummary": { "type": "string", "maxLength": 2048 }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "completed" } }, "required": ["status"] },
+      "then": { "properties": { "verdict": { "enum": ["recommend-approval", "request-changes"] } }, "not": { "required": ["errorSummary"] } }
+    },
+    {
+      "if": { "properties": { "status": { "const": "failed" } }, "required": ["status"] },
+      "then": { "properties": { "findings": { "maxItems": 0 }, "verdict": { "const": "incomplete" } }, "required": ["errorSummary"] }
+    },
+    {
+      "if": { "properties": { "verdict": { "const": "recommend-approval" } }, "required": ["verdict"] },
+      "then": {
+        "properties": {
+          "findings": {
+            "not": {
+              "contains": { "properties": { "severity": { "enum": ["Critical", "Required"] } }, "required": ["severity"] }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "verdict": { "const": "request-changes" } }, "required": ["verdict"] },
+      "then": {
+        "properties": {
+          "findings": {
+            "contains": { "properties": { "severity": { "enum": ["Critical", "Required"] } }, "required": ["severity"] }
+          }
+        }
+      }
+    }
+  ]
+}

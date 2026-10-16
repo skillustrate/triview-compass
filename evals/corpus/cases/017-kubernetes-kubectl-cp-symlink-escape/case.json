@@ -1,0 +1,31 @@
+{
+  "id": "017-kubernetes-kubectl-cp-symlink-escape",
+  "status": "dispositioned",
+  "addedDate": "2026-10-14",
+  "dispositionedDate": "2026-10-14",
+  "source": {
+    "repository": "external: kubernetes/kubernetes (https://github.com/kubernetes/kubernetes), cloned locally for this review",
+    "baseRevision": "d4ac850240563e827668e0b949b16904c9e96551",
+    "targetRevision": "302d2365fb3f2ddf27cf80c6fcb5d1bf9a900a52"
+  },
+  "groundTruth": {
+    "type": "known-fix",
+    "description": "Fixes CVE-2019-11251/GHSA-6qfg-8799-r575: kubectl cp extracted a tar stream from a (possibly malicious) container and wrote regular files and symlinks in the order they appeared in the tar, each individually checked to stay within the destination directory - but a symlink written first, then a later regular-file write that resolves through that symlink, could still escape the destination because the per-entry check only validated the symlink's own target, not what a later write-through-it would resolve to. The fix buffers symlinks in a map and creates all of them only after every regular file has been written, so no write can ever be redirected through an attacker-controlled symlink. First true monorepo-scale case in the corpus: the target revision's tree has 19,298 tracked files (vs. case 011's ~19,000 as the previous largest), and this is a single 29-line change to one file within it, not a large single-file rewrite like 011.",
+    "evidence": [
+      { "path": "pkg/kubectl/cmd/cp/cp.go", "startLine": 416, "endLine": 505, "note": "symlinks deferred into a map and created only after all regular files are written; the original per-entry isDestRelative() boundary check is removed" }
+    ],
+    "expectedVerdict": "recommend-approval-with-no-blocking-findings",
+    "confirmingFix": "this commit itself (PR #82143); see CVE-2019-11251 / GHSA-6qfg-8799-r575"
+  },
+  "requestPath": "./request.json",
+  "policyPath": "./policy.json",
+  "runs": [
+    {
+      "label": "live run, Claude Code CLI 2.1.299, external repository input, context-window 200000",
+      "reportPath": "./report.json",
+      "dispositions": [],
+      "outcomeNote": "All three reviewers completed with zero findings. Notably, none raised the residual symlink-target-validation gap flagged in this case's own groundTruth notes (the new code no longer checks where a symlink's target points, only its own location) - despite the diff explicitly deferring and renaming the relevant logic in a way that would make the removed check's disappearance visible to a careful line-by-line read. This is recorded as a real negative data point (a plausible miss), not smoothed over: it is consistent with, though does not by itself prove, the possibility that a reviewer scoped to a single already-small diff under-weights a 'what used to be checked here and now isn't' comparison against the prior version. No finding exists to disposition, so there is nothing to mark confirmed/rejected; the gap itself remains open and worth revisiting if a future case probes this kind of removed-validation pattern directly."
+    }
+  ],
+  "notes": "scope-policy.js against this 19,298-file tree produced a 150-entry excludedPathGlobs in 0.2s wall time, confirming the directory-collapsing fix from case 011 scales to genuine monorepo size. The real commit's cp_test.go (162 changed lines) is excluded, consistent with how other cases in this corpus scope test files out.\n\nAn important open question for disposition, flagged here rather than pre-judged: the removed isDestRelative() check validated where a symlink's TARGET pointed (rejecting it if outside destDir), and the new deferred-creation code performs no target-path validation at all - only the symlink's own destFileName location is still checked. The commit's own comment reasons this is safe because nothing in untarAll writes data through a symlink after creating it. That's true for this function in isolation, but it means a malicious tar can still cause kubectl cp to plant a symlink inside the user's local destDir pointing anywhere on their filesystem (including absolute paths outside destDir), which simply sits there after extraction completes. Independently corroborating that this residual class of risk was taken seriously: this repository's master branch (and release-1.16 onward) shipped a *different*, more aggressive fix around the same time - 786acdb6687, \"Remove symlink support from kubectl cp\" entirely - while this reviewed commit (302d2365fb3) is the parallel, more conservative backport that shipped to the already-released 1.13/1.14/1.15 branches per the advisory's fixed-versions list. That master chose full removal rather than also adding a target-path check to the reorder approach is circumstantial but real evidence that the residual gap described above was not considered fully closed by reordering alone. Verdict is deliberately left open here: a reviewer who flags the missing target-path validation as a real (if lower-severity than the original CVE) residual risk should not be dismissed as wrong or out-of-scope without this context being weighed carefully - this is NOT structured as a guaranteed miss the way case 003's defect-present cases are, since reasonable security engineers could disagree on required-vs-lower-severity here."
+}

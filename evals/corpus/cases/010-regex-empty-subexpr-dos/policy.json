@@ -1,0 +1,105 @@
+{
+  "contractVersion": "1.0",
+  "mode": "full",
+  "reviewers": [
+    "code-quality",
+    "security",
+    "performance"
+  ],
+  "budgets": {
+    "maxFiles": 50,
+    "maxChangedLines": 6000,
+    "maxLinesPerFile": 2000,
+    "maxBytesPerFile": 1048576,
+    "maxInputTokensPerReviewer": 150000,
+    "maxOutputTokensPerReviewer": 2000,
+    "maxModelCalls": 3,
+    "timeoutSeconds": 120
+  },
+  "dataPolicy": {
+    "mode": "approved-hosted",
+    "selectedProvider": "anthropic-claude-code",
+    "allowedProviders": [
+      "anthropic-claude-code"
+    ]
+  },
+  "pathPolicy": {
+    "excludedPathGlobs": [
+      ".github/**",
+      ".gitignore",
+      "CHANGELOG.md",
+      "Cargo.toml",
+      "HACKING.md",
+      "LICENSE-APACHE",
+      "LICENSE-MIT",
+      "PERFORMANCE.md",
+      "README.md",
+      "UNICODE.md",
+      "bench/**",
+      "examples/**",
+      "fuzz/**",
+      "regex-capi/**",
+      "regex-debug/**",
+      "regex-syntax/**",
+      "rustfmt.toml",
+      "scripts/**",
+      "src/backtrack.rs",
+      "src/dfa.rs",
+      "src/error.rs",
+      "src/exec.rs",
+      "src/expand.rs",
+      "src/find_byte.rs",
+      "src/freqs.rs",
+      "src/input.rs",
+      "src/lib.rs",
+      "src/literal/**",
+      "src/pattern.rs",
+      "src/pikevm.rs",
+      "src/pool.rs",
+      "src/prog.rs",
+      "src/re_builder.rs",
+      "src/re_bytes.rs",
+      "src/re_set.rs",
+      "src/re_trait.rs",
+      "src/re_unicode.rs",
+      "src/sparse.rs",
+      "src/testdata/**",
+      "src/utf8.rs",
+      "test",
+      "tests/**"
+    ],
+    "generatedPathGlobs": [
+      "**/node_modules/**",
+      "**/vendor/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/coverage/**"
+    ],
+    "symlinkHandling": "reject",
+    "binaryHandling": "report-and-skip"
+  },
+  "secretPolicy": {
+    "scannerRequired": true,
+    "sensitivePathGlobs": [
+      ".env",
+      ".env.*",
+      "**/.env",
+      "**/.env.*",
+      "**/.aws/**",
+      "**/.ssh/**",
+      "**/.config/gcloud/**",
+      "**/credentials",
+      "**/credentials.*",
+      "**/*.pem",
+      "**/*.key",
+      "**/*.p12",
+      "**/*.pfx"
+    ],
+    "onScannerFailure": "stop-review"
+  },
+  "sandbox": {
+    "executionRequested": false,
+    "backend": "none",
+    "network": "disabled"
+  }
+}

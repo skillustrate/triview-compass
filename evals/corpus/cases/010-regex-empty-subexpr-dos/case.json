@@ -1,0 +1,31 @@
+{
+  "id": "010-regex-empty-subexpr-dos",
+  "status": "dispositioned",
+  "addedDate": "2026-10-14",
+  "dispositionedDate": "2026-10-14",
+  "source": {
+    "repository": "external: rust-lang/regex (https://github.com/rust-lang/regex), cloned locally for this review",
+    "baseRevision": "b92ffd5471018419ec48dbdef32757424439f065",
+    "targetRevision": "ae70b41d4f46641dbc45c7a4f87954aea356283e"
+  },
+  "groundTruth": {
+    "type": "known-fix",
+    "description": "Fixes CVE-2022-24713 / GHSA-m5pq-gvj9-9vr8: the regex compiler's size-limit check didn't account for empty sub-expressions (they use no heap memory in the compiled object), so a pattern like '(?:){294967295}' could take an arbitrarily long time to compile without ever tripping the size-limit bailout. The fix adds a `c_empty()` helper that increments a tracked 'extra_inst_bytes' counter on every empty sub-expression compile, so enough repetitions now trip the existing size check. First corpus case in a compiled, memory-managed language (Rust) rather than a dynamically-typed one.",
+    "evidence": [
+      { "path": "src/compile.rs", "startLine": 391, "endLine": 402, "note": "new c_empty() helper and its two call sites" }
+    ],
+    "expectedVerdict": "recommend-approval-with-no-blocking-findings",
+    "confirmingFix": "this commit itself; see GHSA-m5pq-gvj9-9vr8"
+  },
+  "requestPath": "./request.json",
+  "policyPath": "./policy.json",
+  "runs": [
+    {
+      "label": "live run, Claude Code CLI 2.1.299, external repository input, context-window 200000",
+      "reportPath": "./report.json",
+      "dispositions": [],
+      "outcomeNote": "All three reviewers completed with zero findings. Matches the known-fix ground truth."
+    }
+  ],
+  "notes": "Preflight initially refused BUDGET_EXCEEDED at the default 100k-token policy cap: src/compile.rs is 1267 lines, and that plus loaded skill guidance exceeded 100k tokens. Raised maxInputTokensPerReviewer to 150000; not a product issue. Policy generated with scope-policy.js's updated directory-collapsing output (see evals/corpus/README.md and the scope-policy.js changelog note in STATE.md for why the generator changed mid-batch)."
+}

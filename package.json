@@ -1,0 +1,48 @@
+{
+  "name": "triview-compass",
+  "version": "0.1.0",
+  "description": "Model-agnostic static code review tool with deterministic guardrails, three independent LLM reviewers, and optional sandboxed verification.",
+  "keywords": ["code-review", "static-analysis", "llm", "security", "sandbox"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skillustrate/triview-compass.git"
+  },
+  "homepage": "https://github.com/skillustrate/triview-compass",
+  "bugs": "https://github.com/skillustrate/triview-compass/issues",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "triview-compass": "./src/cli/review.js"
+  },
+  "scripts": {
+    "test": "node evals/scripts/run-evals.js && node --test tests/*.test.js",
+    "check:structure": "node evals/scripts/run-evals.js",
+    "eval:models": "node evals/scripts/run-model-evals.js",
+    "corpus:score": "node evals/scripts/score-corpus.js",
+    "check:release": "node evals/scripts/check-release.js",
+    "check:package": "node evals/scripts/check-package.js"
+  },
+  "dependencies": {
+    "@lmstudio/sdk": "^2.0.0",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
+  },
+  "files": [
+    "src",
+    "agents",
+    "skills",
+    "contracts",
+    "adapters",
+    "examples",
+    "docs",
+    "README.md",
+    "SECURITY.md",
+    "RELEASE.md",
+    "CONTRIBUTING.md",
+    "CODE_OF_CONDUCT.md",
+    "CHANGELOG.md"
+  ]
+}

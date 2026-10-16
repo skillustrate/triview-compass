@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Privacy-Preserving Audit Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "reviewId", "timestamp", "event", "snapshotSha256", "policyVersion", "scopeCounts", "adapters", "promptVersions", "reviewerStatuses", "findingsCount", "validationStatus", "sandboxStatus"],
+  "properties": {
+    "contractVersion": { "const": "1.0" },
+    "reviewId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "event": { "type": "string", "enum": ["review-finished", "review-incomplete", "review-failed"] },
+    "snapshotSha256": { "$ref": "common.schema.json#/$defs/sha256" },
+    "policyVersion": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+    "scopeCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["included", "excluded", "binary", "generated", "oversized"],
+      "properties": {
+        "included": { "type": "integer", "minimum": 0 },
+        "excluded": { "type": "integer", "minimum": 0 },
+        "binary": { "type": "integer", "minimum": 0 },
+        "generated": { "type": "integer", "minimum": 0 },
+        "oversized": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "adapters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["adapterId", "adapterType", "version"],
+        "properties": {
+          "adapterId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+          "adapterType": { "type": "string", "enum": ["harness", "model", "sandbox"] },
+          "providerId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+          "modelId": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+          "version": { "$ref": "common.schema.json#/$defs/safeIdentifier" }
+        }
+      }
+    },
+    "promptVersions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "version"],
+        "properties": {
+          "role": { "$ref": "common.schema.json#/$defs/reviewer" },
+          "version": { "$ref": "common.schema.json#/$defs/safeIdentifier" }
+        }
+      },
+      "uniqueItems": true
+    },
+    "reviewerStatuses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "status"],
+        "properties": {
+          "role": { "$ref": "common.schema.json#/$defs/reviewer" },
+          "status": { "type": "string", "enum": ["completed", "failed", "omitted"] }
+        }
+      },
+      "uniqueItems": true
+    },
+    "findingsCount": { "type": "integer", "minimum": 0 },
+    "validationStatus": { "type": "string", "enum": ["valid", "invalid", "partial"] },
+    "sandboxStatus": { "type": "string", "enum": ["not-requested", "completed", "skipped", "failed"] },
+    "sandboxProfile": { "$ref": "common.schema.json#/$defs/safeIdentifier" },
+    "sandboxImageSha256": { "$ref": "common.schema.json#/$defs/sha256" },
+    "tokenUsage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inputTokens", "outputTokens"],
+      "properties": {
+        "inputTokens": { "type": "integer", "minimum": 0 },
+        "outputTokens": { "type": "integer", "minimum": 0 },
+        "estimatedCost": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["amount", "currency"],
+          "properties": {
+            "amount": { "type": "number", "minimum": 0 },
+            "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }
+          }
+        }
+      }
+    }
+  }
+}

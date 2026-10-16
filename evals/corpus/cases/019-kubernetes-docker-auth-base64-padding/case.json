@@ -1,0 +1,38 @@
+{
+  "id": "019-kubernetes-docker-auth-base64-padding",
+  "status": "dispositioned",
+  "addedDate": "2026-10-14",
+  "dispositionedDate": "2026-10-14",
+  "source": {
+    "repository": "external: kubernetes/kubernetes (https://github.com/kubernetes/kubernetes), cloned locally for this review",
+    "baseRevision": "6348200c92dec8848e55552f3e8039b3da95bd91",
+    "targetRevision": "a3e434cee404aa8c52b3c64dc844d98aaa2863a6"
+  },
+  "groundTruth": {
+    "type": "known-defect-present",
+    "description": "This commit (PR #82148, merged into master as 5675ef858ef) itself introduces a real, later-fixed defect in decodeDockerConfigFieldAuth, which decodes the base64 'auth' field of a .dockercfg/.docker/config.json credential entry. It adds handling for registries that emit unpadded base64 (no trailing '='), choosing between base64.StdEncoding (padded) and base64.RawStdEncoding (unpadded) using the heuristic 'a string is correctly padded if and only if its length is a multiple of 4'. That heuristic is false whenever the field contains embedded whitespace/newline characters, which base64 permits and which some tools (per the fix's own commit message) actually emit - a correctly-padded field with an embedded newline can have a length that is NOT a multiple of 4, routing it to the wrong decoder and causing a real credential-parsing failure. This was fixed five weeks later by 54a2cea84cb/5bec54ed5b6 ('fix: padded base64 encoded docker auth field'), which replaced the length-modulo check with `strings.HasSuffix(strings.TrimSpace(field), \"=\")`, and whose commit message explicitly names this commit's PR number as the regression it fixes - this is about as close to an authoritative, self-admitted 'this commit introduced a bug' source as a corpus case can get. First credential/config-parsing-category case in the corpus (prior known-defect-present cases are env-var leakage, prototype pollution, and a CORS wildcard match).",
+    "evidence": [
+      { "path": "pkg/credentialprovider/config.go", "startLine": 284, "endLine": 297, "note": "the len(field)%4==0 padding heuristic that breaks on fields with embedded newlines" }
+    ],
+    "expectedVerdict": "at-least-one-reviewer-should-flag-the-padding-heuristic-as-unreliable",
+    "confirmingFix": "54a2cea84cbd9c3d511bf143d470cb71bd85ef23 / 5bec54ed5b6, both titled 'fix: padded base64 encoded docker auth field', explicitly citing this commit's PR (#82148) as the regression"
+  },
+  "requestPath": "./request.json",
+  "policyPath": "./policy.json",
+  "runs": [
+    {
+      "label": "live run, Claude Code CLI 2.1.299, external repository input, context-window 200000",
+      "reportPath": "./report.json",
+      "dispositions": [
+        {
+          "findingId": "finding-1",
+          "reviewer": "security",
+          "severity": "Optional",
+          "verdict": "confirmed",
+          "note": "Matches this case's groundTruth almost exactly: identifies the len(field)%4==0 heuristic, correctly identifies that Go's base64 decoders tolerate embedded \\r/\\n (a real, specific Go stdlib behavior - verified against the later fix's own test fixture, which uses an embedded newline in a field it expects to decode successfully, confirming the decoder must tolerate it), and correctly derives that those characters still count toward len() even though the decoder skips them, producing the length/padding mismatch. The real subsequent fix (54a2cea84cb, filed 5 weeks after this commit) addresses exactly this. Severity calibration is also notably correct: Optional, not Critical/Required - the finding's own impact text explicitly states 'a compatibility regression ... not a security hole,' correctly declining to over-flag a correctness bug in credential-parsing code as a security issue just because it touches 'auth'. This is the corpus's 4th known-defect-present case and the first where the reviewer's calibration (not just its ability to find the bug) is the notable result."
+        }
+      ]
+    }
+  ],
+  "notes": "No Go toolchain was used to execute this (same disclosed limitation as case 009); the core defect is a length-arithmetic claim independent of Go's specific base64 implementation, and was verified directly: for field = \"Zm9vOm\\nJhcg==\\n\" (a correctly-padded, newline-containing auth field taken from the later fix's own added test case), len(field) == 14, and 14 % 4 == 2, so the buggy heuristic in this commit would route it to the 'unpadded' RawStdEncoding branch despite it being validly padded - reproduced directly in Python by computing the same string length and modulo, which is language-independent arithmetic, not a Go-specific behavior being assumed untested. This is NOT security-severity on its own (it's a parsing-correctness bug that can cause valid registry credentials to fail to decode, a functional break rather than a credential leak or bypass), which is deliberately different in flavor from this corpus's other known-defect-present cases (003/004/009 are all exploitable security gaps) - useful for testing whether reviewers correctly calibrate severity down for a correctness-only defect in security-adjacent code, rather than reflexively over-flagging anything touching \"credential\" or \"auth\" as a security Critical finding."
+}
